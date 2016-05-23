@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config ./webpack.config.babel.js",
+    "build": "babel src/index.js --out-dir dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,9 +26,6 @@
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.0",
-    "babel-loader": "^6.2.4",
-    "babel-preset-node6": "^11.0.0",
-    "babel-register": "^6.9.0",
-    "webpack": "^1.13.1"
+    "babel-preset-node6": "^11.0.0"
   }
 }

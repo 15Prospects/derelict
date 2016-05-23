@@ -11,7 +11,7 @@ import Middleware from './Middleware';
  }
  */
 
-export function AuthMiddleware(config) {
+function AuthMiddleware(config) {
   const authMiddleware = new Middleware(config);
   
   // Monkey-Patch checkAuth function on request object
@@ -32,7 +32,7 @@ export function AuthMiddleware(config) {
  */
 
 
-export function AuthRouter(config) {
+function AuthRouter(config) {
   const authRouter = Router();
   const authMiddleware = AuthMiddleware(config);
   
@@ -47,3 +47,8 @@ export function AuthRouter(config) {
   
   return authRouter;
 }
+
+module.exports = {
+  AuthRouter,
+  AuthMiddleware
+};
