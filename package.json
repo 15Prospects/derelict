@@ -1,0 +1,36 @@
+{
+  "name": "jwt-csrf-middleware",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config ./webpack.config.babel.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minocys/jwt-csrf-middleware.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/minocys/jwt-csrf-middleware/issues"
+  },
+  "homepage": "https://github.com/minocys/jwt-csrf-middleware#readme",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "csrf": "^3.0.1",
+    "express": "^4.13.4",
+    "jwt-simple": "^0.5.0",
+    "passport": "^0.3.2",
+    "passport-jwt": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.9.0",
+    "babel-core": "^6.9.0",
+    "babel-loader": "^6.2.4",
+    "babel-preset-node6": "^11.0.0",
+    "babel-register": "^6.9.0",
+    "webpack": "^1.13.1"
+  }
+}
