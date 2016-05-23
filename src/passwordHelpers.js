@@ -5,7 +5,7 @@ export function encryptPass (password) {
   return new Promise(function(resolve, reject) {
     bcrypt.hash(password, null, null, function(err, hash) {
       if (err) {
-        return reject(err);
+        return reject('error encrypting pass');
       }
       return resolve(hash);
     });

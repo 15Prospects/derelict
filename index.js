@@ -230,7 +230,7 @@ module.exports =
 	      });
 	    }).catch(error => {
 	      // Error while encrypting password
-	      response.status(500).json({ error: 'error encrypting pass' });
+	      response.status(500).json({ error: error });
 	    });
 	  }
 
@@ -381,7 +381,7 @@ module.exports =
 	  return new Promise(function (resolve, reject) {
 	    _bcryptNodejs2.default.hash(password, null, null, function (err, hash) {
 	      if (err) {
-	        return reject(err);
+	        return reject('error encrypting pass');
 	      }
 	      return resolve(hash);
 	    });
