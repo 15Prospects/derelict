@@ -1,5 +1,9 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _JwtHelpers = require('./JwtHelpers');
 
 var _JwtHelpers2 = _interopRequireDefault(_JwtHelpers);
@@ -67,29 +71,4 @@ class Authenticator {
     _http2.default.IncomingMessage.prototype.checkAuth = (0, _MakeCheckAuth2.default)(this.jwtHelpers, this.authRules);
   }
 }
-
-//
-// // Auth middleware generator
-// export default function AuthChecker({ decodeJWT }, authRules) {
-//   return (authRule) => {
-//     const token = decodeJWT(this.cookies.jwt);
-//     const user = token.user;
-//     const xsrfToken = this.headers.xsrf;
-//
-//     // Test for XS// }RF
-//     if (verifyXSRF(token.xsrfSecret, xsrfToken)) {
-//
-//       // Test authentication
-//       if (authRules[authRule](token)) {
-//         // Authentication passed, set request.user and return true
-//         this.user = user;
-//         return true;
-//       } else {
-//         // User unauthorized
-//         return false;
-//       }
-//     } else {
-//       // XSRF test failed
-//       return false;
-//     }   
-//   };
+exports.default = Authenticator;
