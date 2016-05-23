@@ -10,35 +10,42 @@ var _Middleware = require('./Middleware');
 
 var _Middleware2 = _interopRequireDefault(_Middleware);
 
+var _Authenticator = require('./Authenticator');
+
+var _Authenticator2 = _interopRequireDefault(_Authenticator);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /*
- {
-   id_field: 'id'
-   secret
-   fetchUser: // function provided with jwt_payload and done
-   createUser: // function to create user provided with done
- }
+  {
+    id_field: 'id'
+    secret
+    authRules
+  }
+ */
+
+function MakeAuthenticator(config) {
+  return new _Authenticator2.default(config);
+}
+
+/*
+  {
+    id_field: 'id'
+    secret
+    authRules
+    fetchUser: // function provided with jwt_payload and done
+    createUser: // function to create user provided with done
+  }
  */
 
 function AuthMiddleware(config) {
-  const authMiddleware = new _Middleware2.default(config);
-
-  // Monkey-Patch checkAuth function on request object
-  _http2.default.IncomingMessage.prototype.checkAuth = authMiddleware.checkAuth;
-
-  return authMiddleware;
+  return new _Middleware2.default(config);
 }
 
 /*
   Auth Router
 
-  Usage:
-
-    app.use(middleware(config);
-
-
-    should expose req.checkAuth(strategy);
+  Usage: app.use(AuthRouter(config);
  */
 
 function AuthRouter(config) {

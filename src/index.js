@@ -1,34 +1,38 @@
 import http from 'http';
 import { Router } from 'express';
 import Middleware from './Middleware';
+import Authenticator from './Authenticator';
 
 /*
- {
-   id_field: 'id'
-   secret
-   fetchUser: // function provided with jwt_payload and done
-   createUser: // function to create user provided with done
- }
+  {
+    id_field: 'id'
+    secret
+    authRules
+  }
+ */
+
+function MakeAuthenticator(config) {
+  return new Authenticator(config);
+}
+
+/*
+  {
+    id_field: 'id'
+    secret
+    authRules
+    fetchUser: // function provided with jwt_payload and done
+    createUser: // function to create user provided with done
+  }
  */
 
 function AuthMiddleware(config) {
-  const authMiddleware = new Middleware(config);
-  
-  // Monkey-Patch checkAuth function on request object
-  http.IncomingMessage.prototype.checkAuth = authMiddleware.checkAuth;
-  
-  return authMiddleware;
+  return new Middleware(config);
 }
 
 /*
   Auth Router
 
-  Usage:
-
-    app.use(middleware(config);
-
-
-    should expose req.checkAuth(strategy);
+  Usage: app.use(AuthRouter(config);
  */
 
 

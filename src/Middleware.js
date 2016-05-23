@@ -1,7 +1,4 @@
-import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
-import { encryptPass, comparePass } from './passwordHelpers';
-import { generateXSRF } from './xsrfHelpers';
 
 /*
   Authentication Middleware Constructor
@@ -13,20 +10,19 @@ import { generateXSRF } from './xsrfHelpers';
   }
  */
 export default class Middleware {
-  constructor(config) {
-    if (config.idField) {
-      // handle unique idField
-    }
+  constructor({ fetchUser, createUser, secret, authRules = [] }) {
 
     // Setup middleware
-    this.fetchUser = config.fetchUser;
-    this.createUser = config.createUser;
-    this.jwtHelpers = new JwtHelpers(config.secret);
-    this.authRules = config.authRules;
+    this.fetchUser = fetchUser;
+    this.createUser = createUser;
+    this.authenticator = new Authenticator({
+      secret: secret,
+      authRules: authRules
+    });
 
-    
-    // Initialize checkAuth
-    this.checkAuth = Authenticator(this.jwtHelpers, config.authRules);
+    this.handleSignUp = this.handleSignUp.bind(this);
+    this.handleLogIn = this.handleLogIn.bind(this);
+    this.makeAuthCheck = this.makeAuthCheck.bind(this);
   }
 
   handleLogIn(request, response) {
@@ -34,29 +30,21 @@ export default class Middleware {
 
     function done(error, user) {
       if (error) {
+        // Error fetching user
         response.status(400).json(error);
       } else {
-        // check password
-        comparePass(password, user.password)
-          .then(() => {
-            // Delete user password before storing in JWT
-            delete user.password;
-            
-            // Generate XSRF and JWT Auth tokens
-            const XSRF = generateXSRF();
-            const JWT = this.jwtHelpers.generateJWT(user, XSRF.secret);
-
+        this.authenticator.logIn(user, password)
+          .then(tokens => {
             // Set Cookies on response
-            response.cookie('X-XSRF-HEADER', XSRF.token, { path: '/' });
-            response.cookie('jwt', JWT, { path: '/' });
-            
+            response.cookie('X-XSRF-HEADER', tokens.XSRF, { path: '/' });
+            response.cookie('jwt', tokens.JWT, { path: '/' });
+
             // Respond with user
             response.status(200).json(user);
-
           })
           .catch(error => {
             response.status(400).json(error);
-          })
+          });
       }
     }
 
@@ -73,24 +61,22 @@ export default class Middleware {
   handleSignUp(request, response) {
     const newUser = request.body;
 
-    encryptPass(newUser.password)
-      .then(encryptedPass => {
-        newUser.password = encryptedPass;
-        this.createUser(newUser, (error, user) => {
+    this.authenticator.encryptPass(newUser)
+      .then(user => {
+        this.createUser(user, (error, user) => {
           if (error) {
             response.status(400).json({ error });
           } else {
             delete user.password;
 
             // Respond with user object
-            response.status(200).json(user); 
+            response.status(200).json(user);
           }
         })
       })
       .catch(error => {
-        // Error while encrypting password
-        response.status(500).json({ error: error });
-      })
+        // Error encrypting password
+        response.status(500).json(error);
+      });
   }
-
 }

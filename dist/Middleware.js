@@ -4,17 +4,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _JwtHelpers = require('./JwtHelpers');
-
-var _JwtHelpers2 = _interopRequireDefault(_JwtHelpers);
-
 var _Authenticator = require('./Authenticator');
 
 var _Authenticator2 = _interopRequireDefault(_Authenticator);
-
-var _passwordHelpers = require('./passwordHelpers');
-
-var _xsrfHelpers = require('./xsrfHelpers');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -28,19 +20,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
   }
  */
 class Middleware {
-  constructor(config) {
-    if (config.idField) {}
-    // handle unique idField
-
+  constructor({ fetchUser, createUser, secret, authRules = [] }) {
 
     // Setup middleware
-    this.fetchUser = config.fetchUser;
-    this.createUser = config.createUser;
-    this.jwtHelpers = new _JwtHelpers2.default(config.secret);
-    this.authRules = config.authRules;
+    this.fetchUser = fetchUser;
+    this.createUser = createUser;
+    this.authenticator = new _Authenticator2.default({
+      secret: secret,
+      authRules: authRules
+    });
 
-    // Initialize checkAuth
-    this.checkAuth = (0, _Authenticator2.default)(this.jwtHelpers, config.authRules);
+    this.handleSignUp = this.handleSignUp.bind(this);
+    this.handleLogIn = this.handleLogIn.bind(this);
+    this.makeAuthCheck = this.makeAuthCheck.bind(this);
   }
 
   handleLogIn(request, response) {
@@ -48,20 +40,13 @@ class Middleware {
 
     function done(error, user) {
       if (error) {
+        // Error fetching user
         response.status(400).json(error);
       } else {
-        // check password
-        (0, _passwordHelpers.comparePass)(password, user.password).then(() => {
-          // Delete user password before storing in JWT
-          delete user.password;
-
-          // Generate XSRF and JWT Auth tokens
-          const XSRF = (0, _xsrfHelpers.generateXSRF)();
-          const JWT = this.jwtHelpers.generateJWT(user, XSRF.secret);
-
+        this.authenticator.logIn(user, password).then(tokens => {
           // Set Cookies on response
-          response.cookie('X-XSRF-HEADER', XSRF.token, { path: '/' });
-          response.cookie('jwt', JWT, { path: '/' });
+          response.cookie('X-XSRF-HEADER', tokens.XSRF, { path: '/' });
+          response.cookie('jwt', tokens.JWT, { path: '/' });
 
           // Respond with user
           response.status(200).json(user);
@@ -84,9 +69,8 @@ class Middleware {
   handleSignUp(request, response) {
     const newUser = request.body;
 
-    (0, _passwordHelpers.encryptPass)(newUser.password).then(encryptedPass => {
-      newUser.password = encryptedPass;
-      this.createUser(newUser, (error, user) => {
+    this.authenticator.encryptPass(newUser).then(user => {
+      this.createUser(user, (error, user) => {
         if (error) {
           response.status(400).json({ error });
         } else {
@@ -97,10 +81,9 @@ class Middleware {
         }
       });
     }).catch(error => {
-      // Error while encrypting password
-      response.status(500).json({ error: error });
+      // Error encrypting password
+      response.status(500).json(error);
     });
   }
-
 }
 exports.default = Middleware;
