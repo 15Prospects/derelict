@@ -1,9 +1,12 @@
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = MakeCheckAuth;
+
+var _xsrfHelpers = require('./xsrfHelpers');
+
 function MakeCheckAuth({ decodeJWT }, authRules) {
   return function (authRule) {
     const token = decodeJWT(this.cookies.jwt);
@@ -18,7 +21,7 @@ function MakeCheckAuth({ decodeJWT }, authRules) {
     }
 
     // Test XSRF and Authentication Rule
-    if (verifyXSRF(token.xsrfSecret, xsrfToken) && rule[authRule](token)) {
+    if ((0, _xsrfHelpers.verifyXSRF)(token.xsrfSecret, xsrfToken) && rule[authRule](token)) {
       // Authentication passed, return user data
       this.user = user;
       return true;

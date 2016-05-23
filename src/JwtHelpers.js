@@ -3,6 +3,8 @@ import jwt from 'jwt-simple';
 export default class JwtHelpers {
   constructor(secret) {
     this.secret = secret;
+    
+    this.decodeJWT = this.decodeJWT.bind(this);
   }
 
   generateJWT(user, xsrfSecret) {

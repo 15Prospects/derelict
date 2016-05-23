@@ -1,3 +1,5 @@
+import { verifyXSRF } from './xsrfHelpers';
+
 export default function MakeCheckAuth({ decodeJWT }, authRules) {
   return function(authRule) {
     const token = decodeJWT(this.cookies.jwt);

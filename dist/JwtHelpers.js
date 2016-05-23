@@ -13,6 +13,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 class JwtHelpers {
   constructor(secret) {
     this.secret = secret;
+
+    this.decodeJWT = this.decodeJWT.bind(this);
   }
 
   generateJWT(user, xsrfSecret) {
