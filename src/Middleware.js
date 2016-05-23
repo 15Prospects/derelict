@@ -27,7 +27,7 @@ export default class Middleware {
   handleLogIn(request, response) {
     const { email, password } = request.body;
 
-    function done(error, user) {
+    this.fetchUser(email, (error, user) => {
       if (error) {
         // Error fetching user
         response.status(400).json(error);
@@ -45,9 +45,7 @@ export default class Middleware {
             response.status(400).json(error);
           });
       }
-    }
-
-    this.fetchUser(email, done);
+    });
   }
 
   handleLogOut(request, response) {
