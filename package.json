@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/minocys/jwt-csrf-middleware.git"
   },
-  "author": "",
+  "author": "Ryan Leung <ryan@fifteenprospects.com> (https://github.com/15Prospects)",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/minocys/jwt-csrf-middleware/issues"
