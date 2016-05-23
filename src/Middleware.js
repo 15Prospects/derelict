@@ -89,7 +89,7 @@ export default class Middleware {
       })
       .catch(error => {
         // Error while encrypting password
-        response.status(500).json({ error });
+        response.status(500).json({ error: 'error encrypting pass' });
       })
   }
 
