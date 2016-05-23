@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt-nodejs';
+
 // Encrypt password for storage
 export function encryptPass (password) {
   return new Promise(function(resolve, reject) {
