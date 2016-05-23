@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/minocys/jwt-csrf-middleware.git"
+    "url": "git+https://github.com/15Prospects/derelict.git"
   },
   "author": "Ryan Leung <ryan@fifteenprospects.com> (https://github.com/15Prospects)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/minocys/jwt-csrf-middleware/issues"
+    "url": "https://github.com/minocys/derelict/issues"
   },
-  "homepage": "https://github.com/minocys/jwt-csrf-middleware#readme",
+  "homepage": "https://github.com/minocys/derelict#readme",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "csrf": "^3.0.1",
