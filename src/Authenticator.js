@@ -2,7 +2,7 @@ import JwtHelpers from './JwtHelpers';
 import { generateXSRF } from './xsrfHelpers';
 import bcrypt from 'bcrypt-nodejs';
 import http from 'http';
-import MakeCheckAuth from 'MakeCheckAuth';
+import MakeCheckAuth from './MakeCheckAuth';
 
 class Authenticator {
   constructor({ secret, authRules = [] }) {

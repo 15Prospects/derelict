@@ -14,7 +14,7 @@ var _http = require('http');
 
 var _http2 = _interopRequireDefault(_http);
 
-var _MakeCheckAuth = require('MakeCheckAuth');
+var _MakeCheckAuth = require('./MakeCheckAuth');
 
 var _MakeCheckAuth2 = _interopRequireDefault(_MakeCheckAuth);
 
