@@ -1,5 +1,5 @@
 {
-  "name": "stateless",
+  "name": "Derelict",
   "version": "1.0.0",
   "description": "Easy Stateless Authentication for Express",
   "main": "dist/index.js",
