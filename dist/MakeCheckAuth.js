@@ -21,7 +21,7 @@ function MakeCheckAuth({ decodeJWT }, authRules) {
     }
 
     // Test XSRF and Authentication Rule
-    if ((0, _xsrfHelpers.verifyXSRF)(token.xsrfSecret, xsrfToken) && rule[authRule](token)) {
+    if ((0, _xsrfHelpers.verifyXSRF)(token.xsrfSecret, xsrfToken) && rule(user)) {
       // Authentication passed, return user data
       this.user = user;
       return true;
