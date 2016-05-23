@@ -15,6 +15,7 @@ fs.readdirSync('node_modules')
   });
 
 const config = {
+  target: 'node',
   entry: [
     `${SOURCE}/index.js`
   ],
