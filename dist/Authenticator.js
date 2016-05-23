@@ -60,7 +60,7 @@ class Authenticator {
         if (error) {
           return reject(error);
         } else {
-          newUser.password = encryptedPass;
+          newUser.password = hash;
           return resolve(newUser);
         }
       });
