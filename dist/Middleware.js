@@ -32,7 +32,6 @@ class Middleware {
 
     this.handleSignUp = this.handleSignUp.bind(this);
     this.handleLogIn = this.handleLogIn.bind(this);
-    this.makeAuthCheck = this.makeAuthCheck.bind(this);
   }
 
   handleLogIn(request, response) {
