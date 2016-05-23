@@ -3203,19 +3203,26 @@ module.exports =
 
 /***/ },
 /* 33 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.encryptPass = encryptPass;
 	exports.comparePass = comparePass;
+
+	var _bcryptNodejs = __webpack_require__(34);
+
+	var _bcryptNodejs2 = _interopRequireDefault(_bcryptNodejs);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	// Encrypt password for storage
 	function encryptPass(password) {
 	  return new Promise(function (resolve, reject) {
-	    bcrypt.hash(password, null, null, function (err, hash) {
+	    _bcryptNodejs2.default.hash(password, null, null, function (err, hash) {
 	      if (err) {
 	        return reject(err);
 	      }
@@ -3227,7 +3234,7 @@ module.exports =
 	// Decrypt and compare password
 	function comparePass(password, storedPass) {
 	  return new Promise(function (resolve, reject) {
-	    bcrypt.compare(password, storedPass, function (err, isAuth) {
+	    _bcryptNodejs2.default.compare(password, storedPass, function (err, isAuth) {
 	      if (isAuth) {
 	        resolve(isAuth);
 	      } else {
@@ -3236,6 +3243,12 @@ module.exports =
 	    });
 	  });
 	}
+
+/***/ },
+/* 34 */
+/***/ function(module, exports) {
+
+	module.exports = require("bcrypt-nodejs");
 
 /***/ }
 /******/ ]);
