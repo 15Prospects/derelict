@@ -51,7 +51,7 @@ export default class Middleware {
   handleLogOut(request, response) {
     // Clear cookies on response
     response.clearCookie('jwt', { path: '/' });
-    response.clearCookie('X-XSRF-Header', { path: '/' });
+    response.clearCookie('X-XSRF-HEADER', { path: '/' });
     response.status(200).end();
   }
 
