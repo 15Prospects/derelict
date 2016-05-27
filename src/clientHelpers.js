@@ -1,5 +1,5 @@
 // Default middleware routes when using AuthRouter
-const defaultRoutes = {
+export const defaultRoutes = {
   login: '/login',
   logout: '/logout',
   signup: '/signup'
@@ -13,7 +13,7 @@ function getCookie(name) {
 }
 
 // Extract XSRF token from cookie storage on client browser
-function getXSRF() {
+export function getXSRF() {
   var headers = {};
   var xsrf = getCookie('X-XSRF-HEADER');
 
@@ -22,10 +22,4 @@ function getXSRF() {
   }
 
   return headers;
-}
-
-export default {
-  defaultRoutes,
-  getCookie,
-  getXSRF
 }

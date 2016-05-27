@@ -1,8 +1,6 @@
-import http from 'http';
 import { Router } from 'express';
 import Middleware from './Middleware';
 import Authenticator from './Authenticator';
-import clientHelpers from './clientHelpers';
 
 /*
   {
@@ -12,7 +10,7 @@ import clientHelpers from './clientHelpers';
   }
  */
 
-function MakeAuthenticator(config) {
+export function MakeAuthenticator(config) {
   return new Authenticator(config);
 }
 
@@ -26,7 +24,7 @@ function MakeAuthenticator(config) {
   }
  */
 
-function AuthMiddleware(config) {
+export function AuthMiddleware(config) {
   return new Middleware(config);
 }
 
@@ -37,7 +35,7 @@ function AuthMiddleware(config) {
  */
 
 
-function AuthRouter(config) {
+export function AuthRouter(config) {
   const authRouter = Router();
   const authMiddleware = AuthMiddleware(config);
   
@@ -52,9 +50,3 @@ function AuthRouter(config) {
   
   return authRouter;
 }
-
-module.exports = {
-  AuthRouter,
-  AuthMiddleware,
-  clientHelpers
-};
