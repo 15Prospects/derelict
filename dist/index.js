@@ -14,6 +14,10 @@ var _Authenticator = require('./Authenticator');
 
 var _Authenticator2 = _interopRequireDefault(_Authenticator);
 
+var _clientHelpers = require('./clientHelpers');
+
+var _clientHelpers2 = _interopRequireDefault(_clientHelpers);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /*
@@ -63,5 +67,6 @@ function AuthRouter(config) {
 
 module.exports = {
   AuthRouter,
-  AuthMiddleware
+  AuthMiddleware,
+  clientHelpers: _clientHelpers2.default
 };
