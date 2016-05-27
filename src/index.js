@@ -2,6 +2,7 @@ import http from 'http';
 import { Router } from 'express';
 import Middleware from './Middleware';
 import Authenticator from './Authenticator';
+import clientHelpers from './clientHelpers';
 
 /*
   {
@@ -54,5 +55,6 @@ function AuthRouter(config) {
 
 module.exports = {
   AuthRouter,
-  AuthMiddleware
+  AuthMiddleware,
+  clientHelpers
 };
