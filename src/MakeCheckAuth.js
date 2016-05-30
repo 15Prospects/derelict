@@ -15,7 +15,8 @@ export default function MakeCheckAuth({ decodeJWT }, authRules) {
   
     // Test XSRF and Authentication Rule
     if (verifyXSRF(token.xsrfSecret, xsrfToken) && rule(user)) {
-      // Authentication passed, return user data
+      // Authentication passed, delete user password, return user data
+      delete user.password;
       this.user = user;
       return true;
     } else {
