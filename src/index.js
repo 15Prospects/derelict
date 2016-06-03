@@ -38,14 +38,15 @@ export function AuthMiddleware(config) {
 export function AuthRouter(config) {
   const authRouter = Router();
   const authMiddleware = AuthMiddleware(config);
+  const customRoutes = config.routes || {};
   
-  authRouter.route('/login')
+  authRouter.route(customRoutes.login || '/login')
     .post(authMiddleware.handleLogIn);
 
-  authRouter.route('/logout')
+  authRouter.route(customRoutes.logout || '/logout')
     .post(authMiddleware.handleLogOut);
 
-  authRouter.route('/signup')
+  authRouter.route(customRoutes.signup || '/signup')
     .post(authMiddleware.handleSignUp);
   
   return authRouter;
