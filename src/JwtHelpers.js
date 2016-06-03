@@ -6,8 +6,8 @@ export default class JwtHelpers {
     
     this.decodeJWT = this.decodeJWT.bind(this);
   }
-
-  generateJWT(user, xsrfSecret) {
+  
+  generateJWT(user, xsrfSecret = null) {
     const tokenData = {
       user,
       xsrfSecret
