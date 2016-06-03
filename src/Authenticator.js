@@ -2,14 +2,15 @@ import JwtHelpers from './JwtHelpers';
 import { generateXSRF } from './xsrfHelpers';
 import bcrypt from 'bcrypt-nodejs';
 import http from 'http';
-import MakeCheckAuth from './MakeCheckAuth';
+import { MakeAttachUser, MakeCheckXSRF, MakeCheckAuth } from './augmentRequest';
 
 export default class Authenticator {
-  constructor({ secret, authRules = [] }) {
+  constructor({ secret, useXsrf = true, authRules = [] }) {
     this.jwtHelpers = new JwtHelpers(secret);
+    this.useXsrf = useXsrf;
     this.authRules = authRules;
-    
-    this.patchCheckAuth();
+
+    this.augmentRequest();
   }
 
   logIn(user, password) {
@@ -20,12 +21,12 @@ export default class Authenticator {
           delete user.password;
 
           // Generate XSRF and JWT Auth tokens
-          const XSRF = generateXSRF();
-          const JWT = this.jwtHelpers.generateJWT(user, XSRF.secret);
+          const { secret = null, token = null } = this.useXsrf ? generateXSRF() : {};
+          const JWT = this.jwtHelpers.generateJWT(user, secret);
 
           resolve({
             JWT,
-            XSRF: XSRF.token
+            XSRF: token
           });
         } else {
           reject(error || 'Password Incorrect');
@@ -47,7 +48,9 @@ export default class Authenticator {
     })    
   }
   
-  patchCheckAuth() {
-    http.IncomingMessage.prototype.checkAuth = MakeCheckAuth(this.jwtHelpers, this.authRules);
+  augmentRequest() {
+    http.IncomingMessage.prototype.attachUser = MakeAttachUser(this.jwtHelpers);
+    http.IncomingMessage.prototype.checkXSRF = MakeCheckXSRF();
+    http.IncomingMessage.prototype.checkAuth = MakeCheckAuth(this.authRules, this.useXsrf);
   }
 }
