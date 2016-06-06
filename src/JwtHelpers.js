@@ -1,21 +1,17 @@
 import jwt from 'jwt-simple';
 
-export default class JwtHelpers {
-  constructor(secret) {
-    this.secret = secret;
+export default function JwtHelpers(secret) {
+  return {
+    generateJWT(user, xsrfSecret = null) {
+      const tokenData = {
+        user,
+        xsrfSecret
+      };
+      return jwt.encode(tokenData, secret);
+    },
     
-    this.decodeJWT = this.decodeJWT.bind(this);
-  }
-  
-  generateJWT(user, xsrfSecret = null) {
-    const tokenData = {
-      user,
-      xsrfSecret
-    };
-    return jwt.encode(tokenData, this.secret);
-  }
-
-  decodeJWT(token) {
-    return jwt.decode(token, this.secret);
+    decodeJWT(token) {
+      return jwt.decode(token, secret);
+    }
   }
 }

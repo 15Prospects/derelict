@@ -1,53 +1,71 @@
-import { Router } from 'express';
-import Middleware from './Middleware';
+import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
+import augmentRequest from './augmentRequest';
 
-/*
-  {
-    id_field: 'id'
-    secret
-    authRules
+const derelict = (function(){
+  let useXsrf = true;
+  let authenticator = {};
+
+  return {
+    setup(config) {
+      const jwt = JwtHelpers(config.secret);
+      useXsrf = config.hasOwnProperty(useXsrf) ? config.useXsrf : true;
+      authenticator = Authenticator(jwt, config.createUser, config.fetchUser, useXsrf);
+      augmentRequest(jwt, config.authRules, useXsrf);
+    },
+
+    signUp(req, res) {
+      const newUser = req.body;
+      
+      console.log(newUser);
+
+      authenticator.register(newUser)
+        .then(user => {
+          res.status(200).json(user);
+        })
+        .catch(error => {
+          res.status(500).json(error);
+        })
+    },
+
+    logIn(req, res) {
+      const { email, password } = req.body;
+
+      authenticator.authenticate(email, password)
+        .then(({JWT, XSRF, user}) => {
+          res.cookie('jwt', JWT, { path: '/' });
+
+          if (useXsrf) {
+            res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
+          }
+
+          res.status(200).json(user);
+        })
+        .catch(error => {
+          res.status(400).json(error);
+        });
+    },
+
+    logOut(req, res) {
+      res.clearCookie('jwt', { path: '/' });
+      res.clearCookie('X-XSRF-HEADER', { path: '/' });
+      res.status(200).end();
+    },
+
+    isAuth(ruleName) {
+      return (req, res, next) => {
+        if (req.checkAuth(ruleName)) {
+          return next();
+        }
+        return res.status(401).json({ error: 'Unauthorized' })
+      }
+    },
+
+    attachUser(req, res) {
+      req.attachUser();
+      next();
+    }
   }
- */
+}());
 
-export function MakeAuthenticator(config) {
-  return new Authenticator(config);
-}
-
-/*
-  {
-    id_field: 'id'
-    secret
-    authRules
-    fetchUser: // function provided with jwt_payload and done
-    createUser: // function to create user provided with done
-  }
- */
-
-export function AuthMiddleware(config) {
-  return new Middleware(config);
-}
-
-/*
-  Auth Router
-
-  Usage: app.use(AuthRouter(config);
- */
-
-
-export function AuthRouter(config) {
-  const authRouter = Router();
-  const authMiddleware = AuthMiddleware(config);
-  const customRoutes = config.routes || {};
-  
-  authRouter.route(customRoutes.login || '/login')
-    .post(authMiddleware.handleLogIn);
-
-  authRouter.route(customRoutes.logout || '/logout')
-    .post(authMiddleware.handleLogOut);
-
-  authRouter.route(customRoutes.signup || '/signup')
-    .post(authMiddleware.handleSignUp);
-  
-  return authRouter;
-}
+export default derelict;
