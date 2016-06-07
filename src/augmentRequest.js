@@ -3,7 +3,7 @@ import { verifyXSRF } from './xsrfHelpers';
 
 function MakeAttachUser(decodeJWT) {
   return function attachUser() {
-    if (this.cookies.jwt) {
+    if (this.cookies && this.cookies.jwt) {
       // Decode token
       const { user, xsrfSecret = null } = decodeJWT(this.cookies.jwt);
 

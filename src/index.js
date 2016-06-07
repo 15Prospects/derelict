@@ -61,7 +61,7 @@ const derelict = (function(){
       }
     },
 
-    attachUser(req, res) {
+    attachUser(req, res, next) {
       req.attachUser();
       next();
     }
