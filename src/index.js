@@ -33,7 +33,7 @@ const derelict = (function(){
 
       authenticator.authenticate(email, password)
         .then(({JWT, XSRF, user}) => {
-          res.cookie('jwt', JWT, { path: '/' });
+          res.cookie('jwt', JWT, { httpOnly: true, path: '/' });
 
           if (useXsrf) {
             res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
