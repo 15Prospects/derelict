@@ -45,7 +45,7 @@ function MakeCheckAuth(authRules, useXsrf) {
     }
   
     // Test Authentication Rule && XSRF
-    return rule(this.user);
+    return rule(this.user, this);
   }
 }
 
