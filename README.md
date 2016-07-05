@@ -2,7 +2,14 @@
 
 ### IMPORTANT! MADE FOR NODE V6^
 
-#### Client Side Helpers
+### Requirements
+#### [cookie-parser](https://www.npmjs.com/package/cookie-parser)
+```
+npm install --save cookie-parser
+app.use(cookieParser());
+```
+
+### Client Side Helpers
 
 derelict provides helpers for client side use.
 getXSRF extracts the xsrf token from browser cookie storage that needs to be attached by hand to any request that needs authentication. 
