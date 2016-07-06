@@ -11,8 +11,6 @@ const defaultConfig = {
   secret: 'testymctestface'
 };
 
-const testUrl = 'http://localhost:1337';
-
 let server;
 let agent;
 
@@ -22,7 +20,7 @@ describe('Derelict', () => {
 
     before((done) => {
       const derelictConfig = Object.assign({}, defaultConfig, {
-        useXsrf: false
+        xsrf: false
       });
     
       server = setupServer(derelictConfig).listen(1337, () => {
