@@ -7,17 +7,15 @@ const derelict = (function(){
   let authenticator = {};
 
   return {
-    setup(config) {
-      const jwt = JwtHelpers(config.secret);
-      useXsrf = config.hasOwnProperty(useXsrf) ? config.useXsrf : true;
-      authenticator = Authenticator(jwt, config.createUser, config.fetchUser, useXsrf);
-      augmentRequest(jwt, config.authRules, useXsrf);
+    setup({ secret, xsrf = true, createUser, fetchUser, authRules }) {
+      const jwt = JwtHelpers(secret);
+      useXsrf = xsrf;
+      authenticator = Authenticator(jwt, createUser, fetchUser, useXsrf);
+      augmentRequest(jwt, authRules, useXsrf);
     },
 
     signUp(req, res) {
       const newUser = req.body;
-      
-      console.log(newUser);
 
       authenticator.register(newUser)
         .then(user => {
@@ -48,7 +46,9 @@ const derelict = (function(){
 
     logOut(req, res) {
       res.clearCookie('jwt', { path: '/' });
-      res.clearCookie('X-XSRF-HEADER', { path: '/' });
+      if (useXsrf) {
+        res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
+      }
       res.status(200).end();
     },
 
