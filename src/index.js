@@ -49,7 +49,7 @@ const derelict = (function(){
       if (useXsrf) {
         res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
       }
-      res.status(200).end();
+      res.status(200).json({ message: 'Success' });
     },
 
     isAuth(ruleName) {
