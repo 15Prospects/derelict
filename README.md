@@ -1,25 +1,27 @@
-### MORE INCOMING
+# Derelict
+Derelict is an Express package that is painless to setup, and provides stateless JWT authentication and XSRF protection out of the box.
 
-### IMPORTANT! MADE FOR NODE V6^
+## Requirements
 
-### Requirements
-#### [cookie-parser](https://www.npmjs.com/package/cookie-parser)
+1. [Node V.6^](https://nodejs.org)
+1. [Express](expressjs.com)
+1. [Cookie Parser](https://github.com/expressjs/cookie-parser) (or something similar)
+
+For derelict to work, you will need to use cookie-parser on your express server to handle cookies. 
+
+Derelict makes uses cookies to send and store the JWT and XSRF tokens.
+
+
 ```
 npm install --save cookie-parser
+
 app.use(cookieParser());
 ```
 
-### Client Side Helpers
 
-derelict provides helpers for client side use.
-getXSRF extracts the xsrf token from browser cookie storage that needs to be attached by hand to any request that needs authentication. 
-defaultRoutes is an object with the default routes when using derelict's AuthRouter with express
-```
-import { getXSRF, defaultRoutes } from 'derelict/lib/clientHelpers';
+## Usage
 
-defaultRoutes = {
-  login: '/login',
-  logout: '/logout',
-  signup: '/signup'
-};
-```
+### Documentation
+- [Setup Derelict](./docs/derelict_setup.md)
+- [Setup Express Routes](./docs/express_routes.md)
+- [Sending Requests](./docs/client_usage.md)
