@@ -14,9 +14,9 @@
   "author": "Ryan Leung <ryan@fifteenprospects.com> (https://github.com/15Prospects)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/minocys/derelict/issues"
+    "url": "https://github.com/15Prospects/derelict/issues"
   },
-  "homepage": "https://github.com/minocys/derelict#readme",
+  "homepage": "https://github.com/15Prospects/derelict#readme",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "csrf": "^3.0.1",
