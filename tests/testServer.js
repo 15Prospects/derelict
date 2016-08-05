@@ -2,7 +2,6 @@ import Express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import derelict from '../src';
-import { createUser, fetchUser, authRules } from './helpers';
 
 function setupServer(derelictConfig, done) {
   const testServer = Express();
@@ -17,6 +16,8 @@ function setupServer(derelictConfig, done) {
   testServer.post('/signup', derelict.signUp);
 
   testServer.post('/logout', derelict.logOut);
+
+  testServer.put('/change-pass', derelict.changePassword);
   
   testServer.get('/pass_auth', derelict.isAuth('pass'), (req, res) => {
     res.sendStatus(200);
