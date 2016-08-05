@@ -7,10 +7,10 @@ const derelict = (function(){
   let authenticator = {};
 
   return {
-    setup({ secret, xsrf = true, createUser, fetchUser, authRules }) {
+    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules }) {
       const jwt = JwtHelpers(secret);
       useXsrf = xsrf;
-      authenticator = Authenticator(jwt, createUser, fetchUser, useXsrf);
+      authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
     },
 
@@ -64,6 +64,13 @@ const derelict = (function(){
     attachUser(req, res, next) {
       req.attachUser();
       next();
+    },
+
+    changePassword(req, res) {
+      const { id, password, new_password } = req.body;
+      authenticator.changePassword(id, password, new_password)
+        .then(user => res.status(200).json(user))
+        .catch(error => res.status(500).json(error));
     }
   }
 }());
