@@ -8,6 +8,8 @@ router.post('/login', derelict.logIn);
 router.post('/logout', derelict.logOut);
 
 router.post('/signup', derelict.signUp);
+
+router.put('/change-pass', derelict.changePassword);
 ```
 
 ## Server Authentication Routes
