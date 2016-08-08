@@ -1,11 +1,11 @@
 {
   "name": "derelict",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Easy Stateless Authentication for Express",
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "test": "mocha tests/spec.js --compilers js:babel-core/register"
+    "test": "mocha --timeout 5000 tests/spec.js --compilers js:babel-core/register"
   },
   "repository": {
     "type": "git",

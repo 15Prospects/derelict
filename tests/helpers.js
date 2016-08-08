@@ -4,15 +4,19 @@ const users = {
   3: { email: 'thelast@email.com', password: 'late at night', role: 1 }
 };
 
-export function fetchUser({ email }) {
+export function fetchUser({ email, id }) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       let user = {};
-      Object.keys(users).forEach(value => {
-        if ( users[value].email === email ) {
-          user = users[value];
-        }
-      });
+      if (email) {
+        Object.keys(users).forEach(value => {
+          if (users[value].email === email ) {
+            user = users[value];
+          }
+        });
+      } else {
+        user = users[id];
+      }
       resolve(user)
     }, 1000);
   })
@@ -26,6 +30,15 @@ export function createUser(user) {
       users[newId] = Object.assign({}, user);
       resolve(user);
     }, 1000)
+  });
+}
+
+export function updateUser({ query, fieldsToUpdate }) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      users[query.id].password = fieldsToUpdate.password;
+      resolve(users[query.id]);
+    }, 1000);
   });
 }
 

@@ -1,12 +1,13 @@
 import request from 'supertest';
 import { assert } from 'chai';
 import setupServer from './testServer';
-import { createUser, fetchUser, authRules } from './helpers';
+import { createUser, fetchUser, updateUser, authRules } from './helpers';
 
 
 const defaultConfig = {
   createUser,
   fetchUser,
+  updateUser,
   authRules,
   secret: 'testymctestface'
 };
@@ -154,10 +155,29 @@ describe('Derelict', () => {
           const cookies = res.headers['set-cookie'];
           assert.lengthOf(cookies, 2);
           assert.match(cookies[0], /jwt/);
-          assert.match(cookies[1], /X\-XSRF\-HEADER/)
+          assert.match(cookies[1], /X\-XSRF\-HEADER/);
           assert.match(cookies[0], /Expires/);
           assert.match(cookies[1], /Expires/);
           done();
+        });
+    });
+
+    it('Should let users change their password', (done) => {
+      agent
+        .put('/change-pass')
+        .send({ id: 4, password: 'test', new_password: 'newtest' })
+        .expect(200)
+        .end((err, res) => {
+          assert(res.body.email = 'test@email.com');
+          assert(!res.body.password);
+
+          agent
+            .post(`/login`)
+            .send({ email: 'test@email.com', password: 'newtest' })
+            .expect(200)
+            .end(() => {
+              done();
+            });
         });
     });
     

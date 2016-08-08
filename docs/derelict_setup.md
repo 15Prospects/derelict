@@ -54,6 +54,30 @@ Derelict requires minimal setup. Only three functions are required to get it up 
     }
     ```
 
+1. A function that updates user data by ID
+    - It should return a promise
+    - It should resolve with a new user object
+    - It should reject with an error
+    
+    ```
+    // query = { id: 5 }
+    // fieldsToUpdate = { password: 'newpassword' }
+    function updateUser({ query, fieldsToUpdate }) {
+      return new Promise((resolve, reject) => {
+        User
+          .query()
+          .patch(fieldsToUpdate)
+          .where(query)
+          .then(result => {
+            resolve(result);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    }
+    ```
+
 1. An object of authentication rule functions
     - Each function will be passed user data and request object
     - Each function should return true or false
@@ -79,6 +103,7 @@ import derelict from 'derelict';
 const authConfig = {
     createUser,
     fetchUser,
+    updateUser,
     authRules,
     secret: 'aSecretForEncodingJWT',
     useXSRF: true // You can omit this, the default setting is true

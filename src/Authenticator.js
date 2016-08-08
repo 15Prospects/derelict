@@ -1,8 +1,7 @@
 import { generateXSRF } from './xsrfHelpers';
 import { comparePass, hashPass } from './passwordHelpers';
 
-export default function Authenticator({ generateJWT }, createUser, fetchUser, useXsrf = true) {
-  
+export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf = true) {
   function makeTokens(user) {
     // Generate XSRF
     const { secret = null, token = null } = useXsrf ? generateXSRF() : {};
@@ -13,7 +12,7 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, us
       XSRF: token
     };
   }
-  
+
   return {
     authenticate(email, password) {
       return new Promise((resolve, reject) => {
@@ -21,10 +20,11 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, us
           .then(user => {
             comparePass(password, user)
               .then(() => {
+                const userObject = Object.assign({}, user);
                 // Delete user password before storing in JWT
-                delete user.password;
+                delete userObject.password;
 
-                resolve(makeTokens(user));
+                resolve(makeTokens(userObject));
               })
               .catch(error => {
                 reject(error || 'Password Incorrect');
@@ -43,8 +43,9 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, us
             newUser.password = hash;
             createUser(newUser)
               .then(user => {
-                delete user.password;
-                resolve(user);
+                const userObject = Object.assign({}, user);
+                delete userObject.password;
+                resolve(userObject);
               })
               .catch(error => {
                 reject(error);
@@ -54,6 +55,40 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, us
             reject(error);
           });
       })
+    },
+
+    changePassword(id, password, newPassword) {
+      return new Promise((resolve, reject) => {
+        fetchUser({ id })
+          .then(user => {
+            comparePass(password, user)
+              .then(() => {
+                // Hash new password
+                hashPass(newPassword)
+                  .then(hash => {
+                    const userObject = {
+                      query: {
+                        id
+                      },
+                      fieldsToUpdate: {
+                        password: hash
+                      }
+                    };
+
+                    updateUser(userObject)
+                      .then(user => {
+                        const result = Object.assign({}, user);
+                        delete result.password;
+                        resolve(result);
+                      })
+                      .catch(error => reject(error));
+                  })
+                  .catch(error => reject(error));
+              })
+              .catch(error => reject(error || 'Password Incorrect'));
+          })
+          .catch(error => reject(error));
+      });
     }
   }
 }
