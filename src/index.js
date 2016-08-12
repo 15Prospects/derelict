@@ -5,28 +5,35 @@ import augmentRequest from './augmentRequest';
 const derelict = (function(){
   let useXsrf = true;
   let authenticator = {};
+  const nextFuncs = {};
 
   return {
-    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules }) {
+    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
       const jwt = JwtHelpers(secret);
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
+      next.forEach(element => {
+        nextFuncs[element] = true;
+      });
     },
 
-    signUp(req, res) {
+    signUp(req, res, next) {
       const newUser = req.body;
 
       authenticator.register(newUser)
         .then(user => {
           res.status(200).json(user);
+          if (nextFuncs['signUp']) {
+            next();
+          }
         })
         .catch(error => {
           res.status(500).json(error);
-        })
+        });
     },
 
-    logIn(req, res) {
+    logIn(req, res, next) {
       const { email, password } = req.body;
 
       authenticator.authenticate(email, password)
@@ -38,18 +45,26 @@ const derelict = (function(){
           }
 
           res.status(200).json(user);
+
+          if (nextFuncs['logIn']) {
+            next();
+          }
         })
         .catch(error => {
           res.status(400).json(error);
         });
     },
 
-    logOut(req, res) {
+    logOut(req, res, next) {
       res.clearCookie('jwt', { path: '/' });
       if (useXsrf) {
         res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
       }
       res.status(200).json({ message: 'Success' });
+
+      if (nextFuncs['logOut']) {
+        next();
+      }
     },
 
     isAuth(ruleName) {
@@ -66,10 +81,16 @@ const derelict = (function(){
       next();
     },
 
-    changePassword(req, res) {
+    changePassword(req, res, next) {
       const { id, password, new_password } = req.body;
       authenticator.changePassword(id, password, new_password)
-        .then(user => res.status(200).json(user))
+        .then(user => {
+          res.status(200).json(user);
+
+          if (nextFuncs['changePassword']) {
+            next();
+          }
+        })
         .catch(error => res.status(401).json(error));
     }
   }
