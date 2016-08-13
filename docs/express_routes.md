@@ -42,7 +42,7 @@ router.get('/userDataRequired', derelict.attachUser, someOtherMiddleware);
 ```
 
 ## next() Middleware
-Log In, LogOut, Sign Up and Change Password will call the next middleware after responding with a 200.
+Log In, LogOut, Sign Up and Change Password will call the next middleware if resolved.
 
 ## Next Step
 
