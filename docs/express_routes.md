@@ -43,6 +43,8 @@ router.get('/userDataRequired', derelict.attachUser, someOtherMiddleware);
 
 ## next() Middleware
 Log In, LogOut, Sign Up and Change Password will call the next middleware if resolved.
+The result of Log In, Sign Up and Change Password is attached to the request. Your next middleware
+can access this through req.user.
 
 ## Next Step
 
