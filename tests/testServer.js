@@ -5,6 +5,7 @@ import derelict from '../src';
 
 function setupServer(derelictConfig, done) {
   const testServer = Express();
+  let nextCalled = false;
 
   testServer.use(cookieParser());
   testServer.use(bodyParser.json());
@@ -18,6 +19,16 @@ function setupServer(derelictConfig, done) {
   testServer.post('/logout', derelict.logOut);
 
   testServer.put('/change-pass', derelict.changePassword);
+
+  testServer.post('/signup-next', derelict.signUp, () => {
+    nextCalled = true;
+  });
+
+  testServer.get('/next-called', (req, res) => {
+    res.status(200).json({
+      nextCalled
+    });
+  });
   
   testServer.get('/pass_auth', derelict.isAuth('pass'), (req, res) => {
     res.sendStatus(200);

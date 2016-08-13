@@ -2,31 +2,32 @@ import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
 import augmentRequest from './augmentRequest';
 
-const derelict = (function(){
+const derelict = (function() {
   let useXsrf = true;
   let authenticator = {};
 
   return {
-    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules }) {
+    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
       const jwt = JwtHelpers(secret);
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
     },
 
-    signUp(req, res) {
+    signUp(req, res, next) {
       const newUser = req.body;
 
       authenticator.register(newUser)
         .then(user => {
           res.status(200).json(user);
+          next();
         })
         .catch(error => {
           res.status(500).json(error);
-        })
+        });
     },
 
-    logIn(req, res) {
+    logIn(req, res, next) {
       const { email, password } = req.body;
 
       authenticator.authenticate(email, password)
@@ -38,18 +39,20 @@ const derelict = (function(){
           }
 
           res.status(200).json(user);
+          next();
         })
         .catch(error => {
           res.status(400).json(error);
         });
     },
 
-    logOut(req, res) {
+    logOut(req, res, next) {
       res.clearCookie('jwt', { path: '/' });
       if (useXsrf) {
         res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
       }
       res.status(200).json({ message: 'Success' });
+      next();
     },
 
     isAuth(ruleName) {
@@ -66,10 +69,13 @@ const derelict = (function(){
       next();
     },
 
-    changePassword(req, res) {
+    changePassword(req, res, next) {
       const { id, password, new_password } = req.body;
       authenticator.changePassword(id, password, new_password)
-        .then(user => res.status(200).json(user))
+        .then(user => {
+          res.status(200).json(user);
+          next();
+        })
         .catch(error => res.status(401).json(error));
     }
   }
