@@ -20,6 +20,7 @@ const derelict = (function() {
       authenticator.register(newUser)
         .then(user => {
           res.status(200).json(user);
+          req.user = user;
           next();
         })
         .catch(error => {
@@ -39,6 +40,7 @@ const derelict = (function() {
           }
 
           res.status(200).json(user);
+          req.user = user;
           next();
         })
         .catch(error => {
@@ -74,6 +76,7 @@ const derelict = (function() {
       authenticator.changePassword(id, password, new_password)
         .then(user => {
           res.status(200).json(user);
+          req.user = user;
           next();
         })
         .catch(error => res.status(401).json(error));
