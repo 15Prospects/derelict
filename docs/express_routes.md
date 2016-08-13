@@ -1,6 +1,6 @@
 # Express Routes Setup
 
-## Log In, Log Out, and Sign Up Routes
+## Log In, Log Out, Sign Up, Change Password Routes
 
 ```
 router.post('/login', derelict.logIn);
@@ -40,6 +40,9 @@ If you only want to attach the user object to the request, you can use derelict.
 router.get('/userDataRequired', derelict.attachUser, someOtherMiddleware);
 
 ```
+
+## next() Middleware
+Log In, LogOut, Sign Up and Change Password will call the next middleware after responding with a 200.
 
 ## Next Step
 
