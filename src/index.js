@@ -2,10 +2,9 @@ import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
 import augmentRequest from './augmentRequest';
 
-const derelict = (function(){
+const derelict = (function() {
   let useXsrf = true;
   let authenticator = {};
-  const nextFuncs = {};
 
   return {
     setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
@@ -13,9 +12,6 @@ const derelict = (function(){
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
-      next.forEach(element => {
-        nextFuncs[element] = true;
-      });
     },
 
     signUp(req, res, next) {
@@ -24,9 +20,7 @@ const derelict = (function(){
       authenticator.register(newUser)
         .then(user => {
           res.status(200).json(user);
-          if (nextFuncs['signUp']) {
-            next();
-          }
+          next();
         })
         .catch(error => {
           res.status(500).json(error);
@@ -45,10 +39,7 @@ const derelict = (function(){
           }
 
           res.status(200).json(user);
-
-          if (nextFuncs['logIn']) {
-            next();
-          }
+          next();
         })
         .catch(error => {
           res.status(400).json(error);
@@ -61,10 +52,7 @@ const derelict = (function(){
         res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
       }
       res.status(200).json({ message: 'Success' });
-
-      if (nextFuncs['logOut']) {
-        next();
-      }
+      next();
     },
 
     isAuth(ruleName) {
@@ -86,10 +74,7 @@ const derelict = (function(){
       authenticator.changePassword(id, password, new_password)
         .then(user => {
           res.status(200).json(user);
-
-          if (nextFuncs['changePassword']) {
-            next();
-          }
+          next();
         })
         .catch(error => res.status(401).json(error));
     }
