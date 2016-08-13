@@ -1,24 +1,22 @@
 import request from 'supertest';
 import { assert } from 'chai';
 import setupServer from './testServer';
-import { createUser, fetchUser, updateUser, authRules } from './helpers';
-
+import { createUser, fetchUser, updateUser, authRules, next } from './helpers';
 
 const defaultConfig = {
   createUser,
   fetchUser,
   updateUser,
   authRules,
-  secret: 'testymctestface'
+  secret: 'testymctestface',
+  next
 };
 
 let server;
 let agent;
 
 describe('Derelict', () => {
-  
   describe('Authentication without XSRF', () => {
-
     before((done) => {
       const derelictConfig = Object.assign({}, defaultConfig, {
         xsrf: false
@@ -41,7 +39,7 @@ describe('Derelict', () => {
         .send({ email: 'test@email.com', password: 'test' })
         .expect(200)
         .end((err, res) => {
-          assert(res.body.email = 'test@email.com');
+          assert(res.body.email === 'test@email.com');
           assert(!res.body.password);
           done()
         });
@@ -84,11 +82,9 @@ describe('Derelict', () => {
           done();
         });
     })
-
   });
 
   describe('Authentication with XSRf', () => {
-
     let xsrfCookie = '';
 
     before((done) => {
@@ -109,7 +105,7 @@ describe('Derelict', () => {
         .send({ email: 'test@email.com', password: 'test' })
         .expect(200)
         .end((err, res) => {
-          assert(res.body.email = 'test@email.com');
+          assert(res.body.email === 'test@email.com');
           assert(!res.body.password);
           done()
         });
@@ -168,7 +164,7 @@ describe('Derelict', () => {
         .send({ id: 4, password: 'test', new_password: 'newtest' })
         .expect(200)
         .end((err, res) => {
-          assert(res.body.email = 'test@email.com');
+          assert(res.body.email === 'test@email.com');
           assert(!res.body.password);
 
           agent
@@ -181,5 +177,41 @@ describe('Derelict', () => {
         });
     });
     
+  });
+
+  // http://stackoverflow.com/questions/30625404/how-to-unit-test-console-output-with-mocha-on-nodejs
+  describe('Calls next middleware conditionally', () => {
+    before(done => {
+      server = setupServer(defaultConfig).listen(1337, () => {
+        console.log('Server ready for testing on port 1337');
+        agent = request.agent(server);
+        done();
+      });
+    });
+
+    after(done => {
+      server.close(done);
+    });
+
+    it('Should call next', done => {
+      agent
+        .post('/signup-next')
+        .send({ email: 'test@email.com', password: 'test' })
+        .expect(200)
+        .end((err, res) => {
+          assert(res.body.email === 'test@email.com');
+          assert(!res.body.password);
+        });
+
+      setTimeout(() => {
+        agent
+        .get('/next-called')
+        .expect(200)
+        .end((err, res) => {
+          assert(res.body.nextCalled === true);
+          done();
+        });
+      }, 2000);
+    });
   });
 });
