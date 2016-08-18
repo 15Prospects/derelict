@@ -2,17 +2,6 @@ import { generateXSRF } from './xsrfHelpers';
 import { comparePass, hashPass } from './passwordHelpers';
 
 export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf = true) {
-  function makeTokens(user) {
-    // Generate XSRF
-    const { secret = null, token = null } = useXsrf ? generateXSRF() : {};
-
-    return {
-      user,
-      JWT: generateJWT(user, secret),
-      XSRF: token
-    };
-  }
-
   return {
     authenticate(email, password) {
       return new Promise((resolve, reject) => {
@@ -24,7 +13,7 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
                 // Delete user password before storing in JWT
                 delete userObject.password;
 
-                resolve(makeTokens(userObject));
+                resolve(userObject);
               })
               .catch(error => {
                 reject(error || 'Password Incorrect');
@@ -89,12 +78,6 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
           })
           .catch(error => reject(error));
       });
-    },
-
-    updateTokens(userObject) {
-      const newTokenData = Object.assign({}, userObject);
-      delete newTokenData.password;
-      return makeTokens(newTokenData);
     }
   }
 }

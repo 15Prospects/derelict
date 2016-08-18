@@ -1,20 +1,11 @@
 import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
 import augmentRequest from './augmentRequest';
+import augmentResponse from './augmentResponse';
 
 const derelict = (function() {
   let useXsrf = true;
   let authenticator = {};
-
-  function attachTokens(JWT, XSRF, res) {
-    res.cookie('jwt', JWT, { httpOnly: true, path: '/' });
-
-    if (useXsrf) {
-      res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
-    }
-
-    return void 0;
-  }
 
   return {
     setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
@@ -22,6 +13,7 @@ const derelict = (function() {
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
+      augmentResponse(jwt, useXsrf);
     },
 
     signUp(req, res, next) {
@@ -42,8 +34,8 @@ const derelict = (function() {
       const { email, password } = req.body;
 
       authenticator.authenticate(email, password)
-        .then(({JWT, XSRF, user}) => {
-          attachTokens(JWT, XSRF, res);
+        .then(user => {
+          res.attachNewJWT(user);
 
           res.status(200).json(user);
           req.user = user;
@@ -86,12 +78,6 @@ const derelict = (function() {
           next();
         })
         .catch(error => res.status(401).json(error));
-    },
-
-    updateTokens(userObject, res) {
-      const { JWT, XSRF } = authenticator.updateTokens(userObject);
-      attachTokens(JWT, XSRF, res);
-      return void 0;
     }
   }
 }());
