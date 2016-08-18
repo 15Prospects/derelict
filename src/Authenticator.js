@@ -89,6 +89,12 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
           })
           .catch(error => reject(error));
       });
+    },
+
+    updateTokens(userObject) {
+      const newTokenData = Object.assign({}, userObject);
+      delete newTokenData.password;
+      return makeTokens(newTokenData);
     }
   }
 }

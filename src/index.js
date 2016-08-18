@@ -6,6 +6,16 @@ const derelict = (function() {
   let useXsrf = true;
   let authenticator = {};
 
+  function attachTokens(JWT, XSRF, res) {
+    res.cookie('jwt', JWT, { httpOnly: true, path: '/' });
+
+    if (useXsrf) {
+      res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
+    }
+
+    return void 0;
+  }
+
   return {
     setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
       const jwt = JwtHelpers(secret);
@@ -33,11 +43,7 @@ const derelict = (function() {
 
       authenticator.authenticate(email, password)
         .then(({JWT, XSRF, user}) => {
-          res.cookie('jwt', JWT, { httpOnly: true, path: '/' });
-
-          if (useXsrf) {
-            res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
-          }
+          attachTokens(JWT, XSRF, res);
 
           res.status(200).json(user);
           req.user = user;
@@ -51,7 +57,7 @@ const derelict = (function() {
     logOut(req, res, next) {
       res.clearCookie('jwt', { path: '/' });
       if (useXsrf) {
-        res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
+        res.clearCookie('X-XSRF-HEADER', { path: '/' });
       }
       res.status(200).json({ message: 'Success' });
       next();
@@ -80,6 +86,12 @@ const derelict = (function() {
           next();
         })
         .catch(error => res.status(401).json(error));
+    },
+
+    updateTokens(userObject, res) {
+      const { JWT, XSRF } = authenticator.updateTokens(userObject);
+      attachTokens(JWT, XSRF, res);
+      return void 0;
     }
   }
 }());
