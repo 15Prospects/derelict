@@ -76,13 +76,10 @@ const derelict = (function() {
         .catch(error => res.status(401).json(error));
     },
 
-    resetPassword() {
+    resetPassword(userIdObj) {
       return new Promise((resolve, reject) => {
-        const { email } = req.body;
-        authenticator.resetPassword(email)
-          .then(password => {
-            resolve({ email, password })
-          })
+        authenticator.resetPassword(userIdObj)
+          .then(password => resolve(password))
           .catch(error => reject(error));
       });
     }

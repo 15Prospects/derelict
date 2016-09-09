@@ -4,13 +4,13 @@ import shortid from 'shortid';
 
 export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf) {
   return {
-    authenticate({ password, ...userId }) {
+    authenticate({ password, ...userIdObj }) {
       return new Promise((resolve, reject) => {
-        fetchUser(userId)
+        fetchUser(userIdObj)
           .then(user => {
             comparePass(password, user)
               .then(() => {
-                const userObject = {...user}
+                const userObject = { ...user }
                 // Delete user password before storing in JWT
                 delete userObject.password;
 
@@ -33,7 +33,7 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
             newUser.password = hash;
             createUser(newUser)
               .then(user => {
-                const userObject = {...user}
+                const userObject = { ...user }
                 delete userObject.password;
                 resolve(userObject);
               })
@@ -47,18 +47,18 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
       })
     },
 
-    changePassword({ password, newPassword, ...userId }) {
+    changePassword({ password, newPassword, ...userIdObj }) {
       return new Promise((resolve, reject) => {
-        fetchUser(userId)
+        fetchUser(userIdObj)
           .then(user => {
             comparePass(password, user)
               .then(() => {
                 // Hash new password
                 hashPass(newPassword)
                   .then(hashedPass => {
-                    updateUser(userId, { password: hashedPass })
+                    updateUser(userIdObj, { password: hashedPass })
                       .then(user => {
-                        const result = {...user}
+                        const result = { ...user }
                         delete result.password;
                         resolve(result);
                       })
@@ -70,25 +70,25 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
           })
           .catch(error => reject(error));
       });
-    }
-  },
+    },
 
-  resetPassword({ email }) {
-    return new Promise((resolve, reject) => {
-      fetchUser({ email })
-        .then(user => {
-          const tempPassword = shortid.generate();
-          hashPass(tempPassword)
-            .then(() => {
-              updateUser(id, { password: tempPassword })
-                .then(() => {
-                  resolve({ tempPassword });
-                })
-                .catch(error => reject(error))
-            })
-            .catch(error => reject(error))
-        })
-        .catch(error => reject(error))
-    })
+    resetPassword(userIdObj) {
+      return new Promise((resolve, reject) => {
+        fetchUser(userIdObj)
+          .then(user => {
+            const tempPassword = shortid.generate();
+            hashPass(tempPassword)
+              .then(password => {
+                updateUser(userIdObj, { password })
+                  .then(() => {
+                    resolve(password);
+                  })
+                  .catch(error => reject(error))
+              })
+              .catch(error => reject(error))
+          })
+          .catch(error => reject(error))
+      })
+    }
   }
 }

@@ -81,7 +81,7 @@ describe('Derelict', () => {
           assert.match(cookies[0], /Expires/);
           done();
         });
-    })
+    });
   });
 
   describe('Authentication with XSRf', () => {
