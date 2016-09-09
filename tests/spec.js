@@ -21,18 +21,18 @@ describe('Derelict', () => {
       const derelictConfig = Object.assign({}, defaultConfig, {
         xsrf: false
       });
-    
+
       server = setupServer(derelictConfig).listen(1337, () => {
         console.log('Server ready for testing on port 1337');
         agent = request.agent(server);
         done();
       });
     });
-    
+
     after((done) => {
       server.close(done);
     });
-    
+
     it('Should let users signup', (done) => {
       agent
         .post('/signup')
@@ -41,7 +41,7 @@ describe('Derelict', () => {
         .end((err, res) => {
           assert(res.body.email === 'test@email.com');
           assert(!res.body.password);
-          done()
+          done();
         });
     });
 
@@ -57,19 +57,19 @@ describe('Derelict', () => {
           done();
         });
     });
-    
+
     it('Should let users access protected routes', (done) => {
       agent
         .get('/pass_auth')
         .expect(200, done);
     });
-    
+
     it('Should block users from accessing route above their pay-grade', (done) => {
       agent
         .get('/fail_auth')
         .expect(401, done);
     });
-    
+
     it('Should clear cookies when users logout', (done) => {
       agent
         .post('/logout')
@@ -176,7 +176,7 @@ describe('Derelict', () => {
             });
         });
     });
-    
+
   });
 
   // http://stackoverflow.com/questions/30625404/how-to-unit-test-console-output-with-mocha-on-nodejs

@@ -46,7 +46,7 @@ export const authRules = {
   pass(user) {
     return user.role === 1
   },
-  
+
   fail(user) {
     return user.role === 2
   }
