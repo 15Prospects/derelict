@@ -1,6 +1,7 @@
 import JwtHelpers from './JwtHelpers';
 import Authenticator from './Authenticator';
 import augmentRequest from './augmentRequest';
+import augmentResponse from './augmentResponse';
 
 const derelict = (function() {
   let useXsrf = true;
@@ -12,6 +13,7 @@ const derelict = (function() {
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
       augmentRequest(jwt, authRules, useXsrf);
+      augmentResponse(jwt, useXsrf);
     },
 
     signUp(req, res, next) {
@@ -32,12 +34,8 @@ const derelict = (function() {
       const { email, password } = req.body;
 
       authenticator.authenticate(email, password)
-        .then(({JWT, XSRF, user}) => {
-          res.cookie('jwt', JWT, { httpOnly: true, path: '/' });
-
-          if (useXsrf) {
-            res.cookie('X-XSRF-HEADER', XSRF, { path: '/' });
-          }
+        .then(user => {
+          res.attachNewJWT(user);
 
           res.status(200).json(user);
           req.user = user;
@@ -51,7 +49,7 @@ const derelict = (function() {
     logOut(req, res, next) {
       res.clearCookie('jwt', { path: '/' });
       if (useXsrf) {
-        res.clearCookie('X-XSRF-HEADER', { path: '/' }); 
+        res.clearCookie('X-XSRF-HEADER', { path: '/' });
       }
       res.status(200).json({ message: 'Success' });
       next();
