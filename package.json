@@ -1,6 +1,6 @@
 {
   "name": "derelict",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "description": "Easy Stateless Authentication for Express",
   "main": "dist/index.js",
   "scripts": {
@@ -20,12 +20,14 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "csrf": "^3.0.1",
-    "jwt-simple": "^0.5.0"
+    "jwt-simple": "^0.5.0",
+    "shortid": "^2.2.6"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.0",
-    "babel-preset-node6": "^11.0.0",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-stage-2": "^6.13.0",
     "body-parser": "^1.15.2",
     "chai": "^3.5.0",
     "cookie-parser": "^1.4.3",

@@ -8,7 +8,7 @@ const derelict = (function() {
   let authenticator = {};
 
   return {
-    setup({ secret, xsrf = true, createUser, fetchUser, updateUser, authRules, next = [] }) {
+    setup({ secret, createUser, fetchUser, updateUser, authRules, xsrf = true }) {
       const jwt = JwtHelpers(secret);
       useXsrf = xsrf;
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser, useXsrf);
@@ -17,9 +17,7 @@ const derelict = (function() {
     },
 
     signUp(req, res, next) {
-      const newUser = req.body;
-
-      authenticator.register(newUser)
+      authenticator.register(req.body)
         .then(user => {
           res.status(200).json(user);
           req.user = user;
@@ -31,9 +29,7 @@ const derelict = (function() {
     },
 
     logIn(req, res, next) {
-      const { email, password } = req.body;
-
-      authenticator.authenticate(email, password)
+      authenticator.authenticate(req.body)
         .then(user => {
           res.attachNewJWT(user);
 
@@ -69,15 +65,23 @@ const derelict = (function() {
       next();
     },
 
+    // Expects { password, newPassword, +identifiers for fetch function }
     changePassword(req, res, next) {
-      const { id, password, new_password } = req.body;
-      authenticator.changePassword(id, password, new_password)
+      authenticator.changePassword(req.body)
         .then(user => {
           res.status(200).json(user);
           req.user = user;
           next();
         })
         .catch(error => res.status(401).json(error));
+    },
+
+    resetPassword(userIdObj) {
+      return new Promise((resolve, reject) => {
+        authenticator.resetPassword(userIdObj)
+          .then(password => resolve(password))
+          .catch(error => reject(error));
+      });
     }
   }
 }());

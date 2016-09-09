@@ -1,15 +1,16 @@
 import { generateXSRF } from './xsrfHelpers';
 import { comparePass, hashPass } from './passwordHelpers';
+import shortid from 'shortid';
 
-export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf = true) {
+export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf) {
   return {
-    authenticate(email, password) {
+    authenticate({ password, ...userIdObj }) {
       return new Promise((resolve, reject) => {
-        fetchUser({ email })
+        fetchUser(userIdObj)
           .then(user => {
             comparePass(password, user)
               .then(() => {
-                const userObject = Object.assign({}, user);
+                const userObject = { ...user }
                 // Delete user password before storing in JWT
                 delete userObject.password;
 
@@ -32,7 +33,7 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
             newUser.password = hash;
             createUser(newUser)
               .then(user => {
-                const userObject = Object.assign({}, user);
+                const userObject = { ...user }
                 delete userObject.password;
                 resolve(userObject);
               })
@@ -46,27 +47,18 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
       })
     },
 
-    changePassword(id, password, newPassword) {
+    changePassword({ password, newPassword, ...userIdObj }) {
       return new Promise((resolve, reject) => {
-        fetchUser({ id })
+        fetchUser(userIdObj)
           .then(user => {
             comparePass(password, user)
               .then(() => {
                 // Hash new password
                 hashPass(newPassword)
-                  .then(hash => {
-                    const userObject = {
-                      query: {
-                        id
-                      },
-                      fieldsToUpdate: {
-                        password: hash
-                      }
-                    };
-
-                    updateUser(userObject)
+                  .then(hashedPass => {
+                    updateUser(userIdObj, { password: hashedPass })
                       .then(user => {
-                        const result = Object.assign({}, user);
+                        const result = { ...user }
                         delete result.password;
                         resolve(result);
                       })
@@ -78,6 +70,25 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
           })
           .catch(error => reject(error));
       });
+    },
+
+    resetPassword(userIdObj) {
+      return new Promise((resolve, reject) => {
+        fetchUser(userIdObj)
+          .then(user => {
+            const tempPassword = shortid.generate();
+            hashPass(tempPassword)
+              .then(password => {
+                updateUser(userIdObj, { password })
+                  .then(() => {
+                    resolve(password);
+                  })
+                  .catch(error => reject(error))
+              })
+              .catch(error => reject(error))
+          })
+          .catch(error => reject(error))
+      })
     }
   }
 }
