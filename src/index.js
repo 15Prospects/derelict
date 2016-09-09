@@ -78,6 +78,17 @@ const derelict = (function() {
           next();
         })
         .catch(error => res.status(401).json(error));
+    },
+
+    resetPassword() {
+      return new Promise((resolve, reject) => {
+        const { email } = req.body;
+        authenticator.resetPassword(email)
+          .then(password => {
+            resolve({ email, password })
+          })
+          .catch(error => reject(error));
+      });
     }
   }
 }());

@@ -20,7 +20,8 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "csrf": "^3.0.1",
-    "jwt-simple": "^0.5.0"
+    "jwt-simple": "^0.5.0",
+    "shortid": "^2.2.6"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",

@@ -1,5 +1,6 @@
 import { generateXSRF } from './xsrfHelpers';
 import { comparePass, hashPass } from './passwordHelpers';
+import shortid from 'shortid';
 
 export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf = true) {
   return {
@@ -79,5 +80,24 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
           .catch(error => reject(error));
       });
     }
+  },
+
+  resetPassword({ email }) {
+    return new Promise((resolve, reject) => {
+      fetchUser({ email })
+        .then(user => {
+          const tempPassword = shortid.generate();
+          hashPass(tempPassword)
+            .then(() => {
+              updateUser(id, { password: tempPassword })
+                .then(() => {
+                  resolve({ tempPassword });
+                })
+                .catch(error => reject(error))
+            })
+            .catch(error => reject(error))
+        })
+        .catch(error => reject(error))
+    })
   }
 }
