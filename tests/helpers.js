@@ -33,11 +33,11 @@ export function createUser(user) {
   });
 }
 
-export function updateUser({ query, fieldsToUpdate }) {
+export function updateUser({ id }, { password }) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      users[query.id].password = fieldsToUpdate.password;
-      resolve(users[query.id]);
+      users[id].password = password;
+      resolve(users[id]);
     }, 1000);
   });
 }
@@ -46,7 +46,7 @@ export const authRules = {
   pass(user) {
     return user.role === 1
   },
-  
+
   fail(user) {
     return user.role === 2
   }
