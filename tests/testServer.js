@@ -14,13 +14,7 @@ function setupServer(derelictConfig, done) {
 
   testServer.post('/login', derelict.logIn);
 
-  testServer.post('/signup', derelict.signUp);
-
-  testServer.post('/logout', derelict.logOut);
-
-  testServer.put('/change-pass', derelict.changePassword);
-
-  testServer.post('/signup-next', derelict.signUp, () => {
+  testServer.post('/signup', derelict.signUp, () => {
     nextCalled = true;
   });
 
@@ -29,11 +23,15 @@ function setupServer(derelictConfig, done) {
       nextCalled
     });
   });
-  
+
+  testServer.post('/logout', derelict.logOut);
+
+  testServer.put('/change-pass', derelict.changePassword);
+
   testServer.get('/pass_auth', derelict.isAuth('pass'), (req, res) => {
     res.sendStatus(200);
   });
-  
+
   testServer.get('/fail_auth', derelict.isAuth('fail'), (req, res) => {
     res.sendStatus(200);
   });

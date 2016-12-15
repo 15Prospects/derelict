@@ -1,6 +1,9 @@
 # Derelict
 Derelict is an Express package that is painless to setup, and provides stateless JWT authentication and XSRF protection out of the box.
 
+## Updating 1.1 -> 2
+Breaking Changes and new features, more detailed readme coming soon.
+
 ## Updating 1.9 -> 1.10
 
 1.10 changes the requirements for updateUser.

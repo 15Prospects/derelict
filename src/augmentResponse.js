@@ -1,24 +1,42 @@
 import http from 'http';
 import { generateXSRF } from './xsrfHelpers';
 
-function makeAttachJWT(generateJWT, useXsrf) {
-  return function attachNewJWT(userObject) {
-    const newTokenData = Object.assign({}, userObject);
-    delete newTokenData.password;
-
+export default function augmentResponse({ generateJWT }) {
+  http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, tokenName, getTokenExpiry) {
     // Generate XSRF
-    const { secret = null, token = null } = useXsrf ? generateXSRF() : {};
+    return new Promise((resolve, reject) => {
+      generateXSRF(({ error, token, secret: xsrfSecret }) => {
+        if (error) {
+          reject(error);
+        }
 
-    this.cookie('jwt', generateJWT(newTokenData, secret), { httpOnly: true, path: '/' });
+        const maxAge = getTokenExpiry()
+        const currentDate = Date.now();
+        const user = { ...userData };
+        delete user.password;
 
-    if (useXsrf) {
-      this.cookie('X-XSRF-HEADER', token, { path: '/' });
-    }
+        const newJWT = generateJWT({
+          user,
+          xsrfSecret,
+          tokenExpiryDate: new Date(currentDate + maxAge),
+          tokenIssueDate: new Date(currentDate)
+        });
 
-    return void 0;
+        this.cookie(`${tokenName}-JWT`, newJWT, {
+          maxAge,
+          httpOnly: true,
+          path: '/'
+        });
+
+        this.cookie(`${tokenName}-XSRF`, token, {
+          maxAge,
+          path: '/'
+        });
+
+        resolve(newJWT);
+      });
+    })
+
+
   }
-}
-
-export default function augmentResponse({ generateJWT }, useXsrf) {
-  http.OutgoingMessage.prototype.attachNewJWT = makeAttachJWT(generateJWT, useXsrf);
 };
