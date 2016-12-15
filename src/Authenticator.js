@@ -1,8 +1,7 @@
-import { generateXSRF } from './xsrfHelpers';
 import { comparePass, hashPass } from './passwordHelpers';
 import shortid from 'shortid';
 
-export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser, useXsrf) {
+export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser) {
   return {
     authenticate({ password, ...userIdObj }) {
       return new Promise((resolve, reject) => {
