@@ -5,13 +5,17 @@ import augmentResponse from './augmentResponse';
 import defaults from './defaults';
 
 const derelict = (function() {
-  let authenticator = {};
-  let onAuthFail = null;
-  let useRefresh = false;
-  let getAccessTokenExpiry = defaults.longTokenExpiry;
-  let getRefreshTokenExpiry = null;
-  let onRefreshFail = null;
-  let validateRefresh = null;
+  let {
+    authenticator,
+    useRefresh,
+    shortTokenExpiry,
+    longTokenExpiry,
+    onAuthFail,
+    onRefreshFail,
+    validateRefresh,
+  } = defaults;
+  let accessTokenExpiry = longTokenExpiry;
+  let refreshTokenExpiry = longTokenExpiry;
 
   return {
     setup({
@@ -21,26 +25,22 @@ const derelict = (function() {
       updateUser,
       authRules,
       refresh,
-      onFail = defaults.authFail
+      onFail
     }) {
-      const jwt = JwtHelpers(secret);
-      authenticator = Authenticator(jwt, createUser, fetchUser, updateUser);
-      onAuthFail = onFail;
-      augmentRequest(jwt, authRules);
-      augmentResponse(jwt);
       if (refresh) {
         useRefresh = true;
-        const {
-          accessTokenExpiry = defaults.shortTokenExpiry,
-          refreshTokenExpiry = defaults.longTokenExpiry,
-          onFail = defaults.refreshAction,
-          validate = defaults.refreshAction
-        } = typeof refresh === 'boolean' ? {} : refresh;
-        getAccessTokenExpiry = accessTokenExpiry;
-        getRefreshTokenExpiry = refreshTokenExpiry;
-        onRefreshFail = onFail;
-        validateRefresh = validate;
+        ({
+          accessTokenExpiry = shortTokenExpiry,
+          refreshTokenExpiry = longTokenExpiry,
+          onRefreshFail = onRefreshFail,
+          validateRefresh = validateRefresh
+        } = typeof refresh === 'boolean' ? {} : refresh);
       }
+      const jwt = JwtHelpers(secret);
+      authenticator = Authenticator(jwt, createUser, fetchUser, updateUser);
+      onAuthFail = onFail || onAuthFail;
+      augmentRequest(jwt, authRules);
+      augmentResponse(jwt, accessTokenExpiry, refreshTokenExpiry);
     },
 
     signUp(req, res, next) {
@@ -59,19 +59,15 @@ const derelict = (function() {
       authenticator.authenticate(req.body)
         .then(user => {
           res
-            .attachNewJWT(user, 'X-ACCESS', getAccessTokenExpiry)
-            .then(accessToken => {
+            .attachNewJWT(user)
+            .then(() => {
               req.user = user;
               if (useRefresh) {
                 // Create refresh token and make available to next middleware
                 return res
-                  .attachNewJWT(
-                    user,
-                    'X-REFRESH',
-                    getRefreshTokenExpiry
-                  )
+                  .attachNewJWT(user, 'refresh')
                   .then(refreshToken => {
-                    req.cookies['X-REFRESH-JWT'] = refreshToken;
+                    req.cookies['x-refresh-jwt'] = refreshToken;
                     res.status(200).json(user);
                     return next();
                   })
@@ -101,7 +97,7 @@ const derelict = (function() {
 
     isAuth(ruleName) {
       return (req, res, next) => {
-        const hasAccess = req.attachUser('X-ACCESS');
+        const hasAccess = req.attachUser();
 
         if (hasAccess === false) {
           return onAuthFail(req.user, () => res.status(401).json({ error: 'Unauthorized Access Token' }));
@@ -113,7 +109,7 @@ const derelict = (function() {
         }
 
         if (useRefresh && hasAccess === null) {
-          const hasRefresh = req.attachUser('X-REFRESH');
+          const hasRefresh = req.attachUser('refresh');
           const token = req.cookies['X-REFRESH-JWT'];
           if (hasRefresh === false) {
             return onRefreshFail(token, req.user, () => (
@@ -122,7 +118,7 @@ const derelict = (function() {
           } else if (hasRefresh) {
             return validateRefresh(token, req.user, (user) => (
               res
-                .attachNewJWT(user, 'X-ACCESS', getRefreshTokenExpiry)
+                .attachNewJWT(user)
                 .then(() => {
                   req.user = user;
                   if (req.checkAuth(ruleName)) {

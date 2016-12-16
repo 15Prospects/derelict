@@ -1,24 +1,12 @@
-function longTokenExpiry() {
-  const yearInMilliseconds = 31556952000;
-  return yearInMilliseconds * 10;
-}
-
-function shortTokenExpiry() {
-  const hourInMilliseconds = 3600000;
-  return hourInMilliseconds;
-}
-
-function refreshAction(token, userData, next) {
-  return next(userData);
-}
-
-function authFail(userData, next) {
-  return next();
-}
+const longTokenExpiry = 31556952000;
+const shortTokenExpiry = 3600000;
 
 export default {
+  authenticator: null,
+  useRefresh: false,
   longTokenExpiry,
   shortTokenExpiry,
-  refreshAction,
-  authFail
+  onAuthFail: (userData, next) => next(),
+  onRefreshFail: (token, userData, next) => next(),
+  validateRefresh: (token, userData, next) => next()
 };
