@@ -2,7 +2,8 @@ import http from 'http';
 import { verifyXSRF } from './xsrfHelpers';
 
 export default function augmentRequest({ decodeJWT }, authRules = {}) {
-  http.IncomingMessage.prototype.attachUser = function attachUser(tokenType) {
+  http.IncomingMessage.prototype.attachUser = function attachUser(type) {
+    const tokenType = type && type === 'refresh' ? 'X-REFRESH' : 'X-ACCESS';
     const tokenName = `${tokenType}-JWT`;
     const headerName = `${tokenType}-XSRF`.toLowerCase();
     if (this.cookies && this.cookies[tokenName]) {
