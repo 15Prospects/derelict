@@ -57,7 +57,7 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
                   .then(hashedPass => {
                     updateUser(userIdObj, { password: hashedPass })
                       .then(user => {
-                        const result = { ...user }
+                        const result = { ...user };
                         delete result.password;
                         resolve(result);
                       })
@@ -73,19 +73,12 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
 
     resetPassword(userIdObj) {
       return new Promise((resolve, reject) => {
-        fetchUser(userIdObj)
-          .then(user => {
-            const tempPassword = shortid.generate();
-            hashPass(tempPassword)
-              .then(password => {
-                updateUser(userIdObj, { password })
-                  .then(() => {
-                    resolve(password);
-                  })
-                  .catch(error => reject(error))
-              })
-              .catch(error => reject(error))
-          })
+        const tempPassword = shortid.generate();
+        const parsedUserIdObj = userIdObj;
+
+        hashPass(tempPassword)
+          .then(password => updateUser(parsedUserIdObj, { password }))
+          .then(() => resolve(tempPassword))
           .catch(error => reject(error))
       })
     }
