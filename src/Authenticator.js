@@ -73,10 +73,9 @@ export default function Authenticator({ generateJWT }, createUser, fetchUser, up
 
     resetPassword(userIdObj) {
       const tempPassword = shortid.generate();
-      const parsedUserIdObj = userIdObj;
 
       return hashPass(tempPassword)
-        .then(password => updateUser(parsedUserIdObj, { password }))
+        .then(password => updateUser(userIdObj, { password }))
         .then(() => tempPassword);
     }
   }
