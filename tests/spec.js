@@ -133,5 +133,19 @@ describe('Derelict', () => {
         });
     });
 
+    it('Should let users reset their password', (done) => {
+      agent
+        .put('/reset-pass')
+        .send({ id: 4 })
+        .expect(200)
+        .end((err, res) => {
+
+          agent
+            .post('/login')
+            .send({ email: 'test@email.com', password: 'newtest' })
+            .expect(400)
+            .end(() => done());
+        });
+    });
   });
 });

@@ -36,6 +36,15 @@ function setupServer(derelictConfig, done) {
     res.sendStatus(200);
   });
 
+  testServer.put(
+    '/reset-pass',
+    (req, res) => {
+      derelict.resetPassword(req.body)
+        .then(() => res.status(200).end())
+        .catch(() => res.status(500).end());
+    }
+  );
+
   return testServer;
 }
 
