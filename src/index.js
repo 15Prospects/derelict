@@ -155,11 +155,7 @@ const derelict = (function() {
     },
 
     resetPassword(userIdObj) {
-      return new Promise((resolve, reject) => {
-        authenticator.resetPassword(userIdObj)
-          .then(password => resolve(password))
-          .catch(error => reject(error));
-      });
+      return authenticator.resetPassword(userIdObj);
     }
   }
 }());
