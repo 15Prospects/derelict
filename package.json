@@ -1,6 +1,6 @@
 {
   "name": "derelict",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Easy Stateless Authentication for Express",
   "main": "dist/index.js",
   "scripts": {
