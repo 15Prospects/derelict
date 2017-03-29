@@ -1,15 +1,14 @@
 import request from 'supertest';
 import { assert } from 'chai';
 import setupServer from './testServer';
-import { createUser, fetchUser, updateUser, authRules, next } from './helpers';
+import { createUser, fetchUser, updateUser, authRules } from './helpers';
 
 const defaultConfig = {
   createUser,
   fetchUser,
   updateUser,
   authRules,
-  secret: 'testymctestface',
-  next
+  secret: 'testymctestface'
 };
 
 let server;
