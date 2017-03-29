@@ -106,11 +106,13 @@ const authConfig = {
     updateUser,
     authRules,
     secret: 'aSecretForEncodingJWT',
-    useXSRF: true // You can omit this, the default setting is true
+    sslDomain: 'website.com'
 }
 
 derelict.setup(authConfig);
 ```
+
+Passing the sslDomain will cause derelict to Secure and Domain directives on the cookies.
 
 ## Next Step
 
