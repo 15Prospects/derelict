@@ -1,20 +1,23 @@
 import http from 'http';
 import { generateXSRF } from './xsrfHelpers';
 
-export default function augmentResponse({ generateJWT }, accessTokenExpiry, refreshTokenExpiry) {
+export default function augmentResponse({ generateJWT }, accessTokenExpiry, refreshTokenExpiry, sslDomain) {
   http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, type) {
     // Generate XSRF
     return new Promise((resolve, reject) => {
       let tokenName = 'X-ACCESS';
       let maxAge = accessTokenExpiry;
+
       if (type === 'refresh') {
         tokenName = 'X-REFRESH';
         maxAge = refreshTokenExpiry;
       }
+
       generateXSRF(({ error, token, secret: xsrfSecret }) => {
         if (error) {
           reject(error);
         }
+
         const currentDate = Date.now();
         const user = { ...userData };
         delete user.password;
@@ -26,16 +29,18 @@ export default function augmentResponse({ generateJWT }, accessTokenExpiry, refr
           tokenIssueDate: new Date(currentDate)
         });
 
-        this.cookie(`${tokenName}-JWT`, newJWT, {
-          maxAge,
-          httpOnly: true,
-          path: '/'
-        });
+        const jwtCookieOptions = { maxAge, path: '/', httpOnly: true };
+        const xsrfCookieOptions = { maxAge, path: '/' };
 
-        this.cookie(`${tokenName}-XSRF`, token, {
-          maxAge,
-          path: '/'
-        });
+        if (sslDomain) {
+          xsrfCookieOptions.secure = true;
+          jwtCookieOptions.secure = true;
+          xsrfCookieOptions.domain = sslDomain;
+          jwtCookieOptions.domain = sslDomain;
+        }
+
+        this.cookie(`${tokenName}-JWT`, newJWT, jwtCookieOptions);
+        this.cookie(`${tokenName}-XSRF`, token, xsrfCookieOptions);
 
         resolve(newJWT);
       });
