@@ -73,11 +73,16 @@ describe('Derelict', () => {
           assert.lengthOf(cookies, 2);
           assert.match(cookies[0], /X\-ACCESS\-JWT/);
           assert.match(cookies[1], /X\-ACCESS\-XSRF/);
+          assert.isFalse(cookies[0].indexOf('something.com') > 0);
+          assert.isFalse(cookies[0].indexOf('Secure') > 0);
+          assert.isFalse(cookies[1].indexOf('something.com') > 0);
+          assert.isFalse(cookies[1].indexOf('Secure') > 0);
         })
         .end((err, res) => {
           const xsrfIndex = res.headers['set-cookie'].findIndex((item) => {
             return item.indexOf('X-ACCESS-XSRF') > -1;
           });
+
           const parts = ('; ' + res.headers['set-cookie'][xsrfIndex]).split("; X-ACCESS-XSRF=");
           xsrfCookie = parts.pop().split(";").shift();
           done();
@@ -145,6 +150,37 @@ describe('Derelict', () => {
             .expect(400)
             .end(() => done());
         });
+    });
+  });
+
+  describe('Handle sslDomain Setting', () => {
+    before((done) => {
+      const sslConfig = { ...defaultConfig, sslDomain: 'something.com' };
+
+      server = setupServer(sslConfig).listen(1337, () => {
+        console.log('Server ready for testing on port 1337');
+        agent = request.agent(server);
+        done();
+      });
+    });
+
+    after((done) => {
+      server.close(done);
+    });
+
+    it('Should set Domain and Secure directive when sslDomain is given', (done) => {
+      agent
+        .post('/signup')
+        .send({ email: 'test@email.com', password: 'test' })
+        .expect(200)
+        .expect((res) => {
+          const cookies = res.headers['set-cookie'];
+          assert.isTrue(cookies[0].indexOf('something.com') > 0);
+          assert.isTrue(cookies[0].indexOf('Secure') > 0);
+          assert.isTrue(cookies[1].indexOf('something.com') > 0);
+          assert.isTrue(cookies[1].indexOf('Secure') > 0);
+        })
+        .end(() => done());
     });
   });
 });
