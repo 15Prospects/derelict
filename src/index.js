@@ -16,6 +16,7 @@ const derelict = (function() {
   } = defaults;
   let accessTokenExpiry = longTokenExpiry;
   let refreshTokenExpiry = longTokenExpiry;
+  let domainString;
 
   return {
     setup({
@@ -28,6 +29,8 @@ const derelict = (function() {
       onFail,
       sslDomain
     }) {
+      domainString = sslDomain;
+
       if (refresh) {
         useRefresh = true;
         ({
@@ -37,6 +40,7 @@ const derelict = (function() {
           validateRefresh = validateRefresh
         } = typeof refresh === 'boolean' ? {} : refresh);
       }
+
       const jwt = JwtHelpers(secret);
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser);
       onAuthFail = onFail || onAuthFail;
@@ -86,12 +90,20 @@ const derelict = (function() {
     },
 
     logOut(req, res, next) {
-      res.clearCookie('X-ACCESS-JWT', { path: '/' });
-      res.clearCookie('X-ACCESS-XSRF', { path: '/' });
-      if (useRefresh) {
-        res.clearCookie('X-REFRESH-JWT', { path: '/' });
-        res.clearCookie('X-REFRESH-XSRF', { path: '/' });
+      const clearOpts = { path: '/' };
+
+      if (domainString) {
+        clearOpts.domain = domainString;
       }
+
+      res.clearCookie('X-ACCESS-JWT', clearOpts);
+      res.clearCookie('X-ACCESS-XSRF', clearOpts);
+
+      if (useRefresh) {
+        res.clearCookie('X-REFRESH-JWT', clearOpts);
+        res.clearCookie('X-REFRESH-XSRF', clearOpts);
+      }
+
       res.status(200).json({ message: 'Success' });
       next();
     },
