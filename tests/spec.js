@@ -182,5 +182,22 @@ describe('Derelict', () => {
         })
         .end(() => done());
     });
+
+    it('Should clear cookies when users logout when sslDomain is given', (done) => {
+      agent
+        .post('/logout')
+        .expect(200)
+        .end((err, res) => {
+          const cookies = res.headers['set-cookie'];
+          assert.lengthOf(cookies, 2);
+          assert.isTrue(cookies[0].indexOf('something.com') > 0);
+          assert.isTrue(cookies[1].indexOf('something.com') > 0);
+          assert.match(cookies[0], /X\-ACCESS\-JWT/);
+          assert.match(cookies[1], /X\-ACCESS\-XSRF/);
+          assert.match(cookies[0], /Expires/);
+          assert.match(cookies[1], /Expires/);
+          done();
+        });
+    });
   });
 });
