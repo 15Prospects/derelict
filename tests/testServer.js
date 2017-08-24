@@ -45,6 +45,19 @@ function setupServer(derelictConfig, done) {
     }
   );
 
+  testServer.post('/create_jwt', (req, res) => {
+    res
+      .secureJWT(req.body.data, {
+        maxAge: req.body.testAge,
+        name: req.body.testName,
+      })
+      .then(() => res.status(200).end());
+  });
+
+  testServer.post('/decode_jwt', (req, res) => {
+    res.status(200).json({ token: req.getSecureJWT(req.body.testName) });
+  });
+
   return testServer;
 }
 

@@ -1,34 +1,29 @@
 import http from 'http';
 import { generateXSRF } from './xsrfHelpers';
 
+
 export default function augmentResponse({ generateJWT }, accessTokenExpiry, refreshTokenExpiry, sslDomain) {
-  http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, type) {
-    // Generate XSRF
-    return new Promise((resolve, reject) => {
-      let tokenName = 'X-ACCESS';
-      let maxAge = accessTokenExpiry;
-
-      if (type === 'refresh') {
-        tokenName = 'X-REFRESH';
-        maxAge = refreshTokenExpiry;
-      }
-
+  /**
+   * Create JWT and XSRF tokens with data, attach as cookies to response object
+   * @param {Object} data           Data to store in JWT
+   * @param {Number} options.maxAge Optional lifetime of token in milliseconds
+   * @param {String} options.name   Optional name of jwt token (default 'ACCESS')
+   * @return {Object} data object or error
+   */
+  function secureJWT(data, { maxAge = accessTokenExpiry, name = 'ACCESS' } = {}) {
+    return new Promise((resolve, reject) => (
       generateXSRF(({ error, token, secret: xsrfSecret }) => {
         if (error) {
-          reject(error);
+          reject({ error: new Error(`Error generating secure ${name} tokens`), status: 500 });
         }
 
         const currentDate = Date.now();
-        const user = { ...userData };
-        delete user.password;
-
         const newJWT = generateJWT({
-          user,
+          ...data,
           xsrfSecret,
           tokenExpiryDate: new Date(currentDate + maxAge),
-          tokenIssueDate: new Date(currentDate)
+          tokenIssueDate: new Date(currentDate),
         });
-
         const jwtCookieOptions = { maxAge, path: '/', httpOnly: true };
         const xsrfCookieOptions = { maxAge, path: '/' };
 
@@ -39,13 +34,32 @@ export default function augmentResponse({ generateJWT }, accessTokenExpiry, refr
           jwtCookieOptions.domain = sslDomain;
         }
 
-        this.cookie(`${tokenName}-JWT`, newJWT, jwtCookieOptions);
-        this.cookie(`${tokenName}-XSRF`, token, xsrfCookieOptions);
+        const tokenName = name.toUpperCase();
+        this.cookie(`X-${tokenName}-JWT`, newJWT, jwtCookieOptions);
+        this.cookie(`X-${tokenName}-XSRF`, token, xsrfCookieOptions);
+        resolve(data);
+      })
+    ));
+  }
 
-        resolve(newJWT);
-      });
-    })
+  http.OutgoingMessage.prototype.secureJWT = secureJWT;
 
+  // Deprecated
+  http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, type) {
+    const options = { dataName: 'user' };
 
+    if (type === 'refresh') {
+      options.name = 'REFRESH';
+      options.maxAge = refreshTokenExpiry;
+    }
+    
+    const user = { ...userData };
+    delete user.password;
+
+    return this.secureJWT(user, options); 
+  }
+
+  http.OutgoingMessage.prototype.createSSRAuthToken = (userId) => {
+    return generateJWT({ userId, tokenExpiryDate: new Date(Date.now() + 300000)})
   }
 };
