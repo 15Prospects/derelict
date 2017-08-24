@@ -39,3 +39,4 @@ app.use(cookieParser());
 - [Setup Derelict](./docs/derelict_setup.md)
 - [Setup Express Routes](./docs/express_routes.md)
 - [Sending Requests](./docs/client_usage.md)
+- [Deprecations](./docs/deprecated.md)

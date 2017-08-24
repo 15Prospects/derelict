@@ -2,6 +2,7 @@ import request from 'supertest';
 import { assert } from 'chai';
 import setupServer from './testServer';
 import { createUser, fetchUser, updateUser, authRules } from './helpers';
+import { getXSRF } from '../src/clientHelpers';
 
 const defaultConfig = {
   createUser,
@@ -15,6 +16,58 @@ let server;
 let agent;
 
 describe('Derelict', () => {
+  describe('JWT and XSRF Tokens', () => {
+    let xsrfCookie = '';
+
+    before((done) => {
+      server = setupServer(defaultConfig).listen(1337, () => {
+        console.log('Server ready for testing on port 1337');
+        agent = request.agent(server);
+        done();
+      });
+    });
+
+    after((done) => {
+      server.close(done);
+    });
+
+    it('Should create tokens', done => (
+      agent
+        .post('/create_jwt')
+        .send({ data: { a: 'test' }, testName: 'TeSt' })
+        .expect((res) => {
+          const cookies = res.headers['set-cookie'];
+          assert.lengthOf(cookies, 2);
+          assert.match(cookies[0], /X\-TEST\-JWT/);
+          assert.match(cookies[1], /X\-TEST\-XSRF/);
+          assert.isFalse(cookies[0].indexOf('something.com') > 0);
+          assert.isFalse(cookies[0].indexOf('Secure') > 0);
+          assert.isFalse(cookies[1].indexOf('something.com') > 0);
+          assert.isFalse(cookies[1].indexOf('Secure') > 0);
+        })
+        .end((err, res) => {
+          const xsrfIndex = res.headers['set-cookie'].findIndex((item) => {
+            return item.indexOf('X-TEST-XSRF') > -1;
+          });
+
+          const parts = ('; ' + res.headers['set-cookie'][xsrfIndex]).split("; X-TEST-XSRF=");
+          xsrfCookie = parts.pop().split(";").shift();
+          done();
+        })
+    ));
+
+    it('Should decode jwt tokens', done => (
+      agent
+        .post('/decode_jwt')
+        .set({ 'X-TEST-XSRF': xsrfCookie })
+        .send({ testName: 'tEsT' })
+        .end((err, res) => {
+          assert(res.body.token.a === 'test');
+          done();
+        })
+    ));
+  });
+
   describe('Authentication with XSRF', () => {
     let xsrfCookie = '';
 
