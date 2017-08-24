@@ -13,9 +13,9 @@ function getCookie(name) {
 }
 
 // Extract XSRF token from cookie storage on client browser
-export function getXSRF() {
+export function getXSRF(name = 'ACCESS') {
   var headers = {};
-  var xsrf = getCookie('X-ACCESS-XSRF');
+  var xsrf = getCookie(`X-${name.toUpperCase()}-XSRF`);
 
   if (xsrf) {
     headers['x-access-xsrf'] = xsrf;
