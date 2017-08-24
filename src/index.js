@@ -45,7 +45,7 @@ const derelict = (function() {
       authenticator = Authenticator(jwt, createUser, fetchUser, updateUser);
       onAuthFail = onFail || onAuthFail;
       augmentRequest(jwt, authRules);
-      augmentResponse(jwt, accessTokenExpiry, refreshTokenExpiry, sslDomain);
+      augmentResponse(jwt, accessTokenExpiry, sslDomain);
     },
 
     signUp(req, res, next) {
