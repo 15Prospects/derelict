@@ -55,38 +55,30 @@ const derelict = (function() {
           req.user = user;
           next();
         })
-        .catch(error => {
-          res.status(500).json(error);
+        .catch(({ error, status }) => {
+          res.status(status).json(error);
         });
     },
 
     logIn(req, res, next) {
       authenticator.authenticate(req.body)
-        .then(user => {
-          res
-            .attachNewJWT(user)
-            .then(() => {
-              req.user = user;
-              if (useRefresh) {
-                // Create refresh token and make available to next middleware
-                return res
-                  .attachNewJWT(user, 'refresh')
-                  .then(refreshToken => {
-                    req.cookies['x-refresh-jwt'] = refreshToken;
-                    res.status(200).json(user);
-                    return next();
-                  })
-                  .catch(error => res.status(500).json({ error: 'Error Generating Refresh Token' }))
-              } else {
-                res.status(200).json(user);
-                return next();
-              }
-            })
-            .catch(error => res.status(500).json({ error: 'Error Generating Access Token' }));
+        .then(user => res.secureJWT({ ...user, password: null }))
+        .then((user) => {
+          if (useRefresh) {
+            return res.secureJWT(user, {
+              name: 'refresh',
+              maxAge: refreshTokenExpiry, 
+            });
+          }
+
+          return user
         })
-        .catch(error => {
-          res.status(400).json(error);
-        });
+        .then((user) => {
+          res.status(200).json(user);
+          req.user = user;
+          next();
+        })
+        .catch(({ error, status }) => res.status(status).json(error));
     },
 
     logOut(req, res, next) {
@@ -110,36 +102,47 @@ const derelict = (function() {
 
     isAuth(ruleName) {
       return (req, res, next) => {
-        const hasAccess = req.attachUser();
+        const accessToken = req.getSecureJWT('access');
 
-        if (hasAccess === false) {
-          return onAuthFail(req.user, () => res.status(401).json({ error: 'Unauthorized Access Token' }));
-        } else if (hasAccess) {
+        if (accessToken === false) {
+          return onAuthFail(accessToken, () => (
+            res.status(401).json({ error: 'Unauthorized Access Token' })
+          ));
+        } else if (accessToken) {
+          req.user = accessToken;
+
           if (req.checkAuth(ruleName)) {
             return next();
           }
+
           return res.status(401).json({ error: 'User Not Authorized' });
         }
 
-        if (useRefresh && hasAccess === null) {
-          const hasRefresh = req.attachUser('refresh');
-          const token = req.cookies['X-REFRESH-JWT'];
-          if (hasRefresh === false) {
-            return onRefreshFail(token, req.user, () => (
+        if (useRefresh && accessToken === null) {
+          const refreshToken = req.getSecureJWT('refresh');
+
+          if (refreshToken === false) {
+            return onRefreshFail(refreshToken, () => (
               res.status(401).json({ error: 'Unauthorized Refresh Token' })
             ));
-          } else if (hasRefresh) {
-            return validateRefresh(token, req.user, (user) => (
+          } else if (refreshToken) {
+            // validateRefresh should confirm token data is good
+            // and return user data for a new access token
+            return validateRefresh(refreshToken, user => (
               res
-                .attachNewJWT(user)
-                .then(() => {
+                .secureJWT(user)
+                .then((user) => {
                   req.user = user;
+
                   if (req.checkAuth(ruleName)) {
                     return next();
                   }
+
                   return res.status(401).json({ error: 'User Not Authorized' });
                 })
-                .catch(error => res.status(500).json({ error: 'Error Refreshing Access Token' }))
+                .catch(error => (
+                  res.status(500).json({ error: 'Error Refreshing Access Token' })
+                ))
             ));
           }
         }
@@ -149,10 +152,14 @@ const derelict = (function() {
     },
 
     attachUser(req, res, next) {
-      const hasAccess = req.attachUser();
-      if (hasAccess === false) {
-        return onAuthFail(req.user, () => res.status(401).json({ error: 'Unauthorized Access Token' }));
+      const token = req.getSecureJWT('access');
+      if (token === false) {
+        return onAuthFail(req.user, () => (
+          res.status(401).json({ error: 'Unauthorized Access Token' })
+        ));
       }
+
+      req.user = token;
       return next();
     },
 
@@ -164,7 +171,7 @@ const derelict = (function() {
           req.user = user;
           next();
         })
-        .catch(error => res.status(401).json(error));
+        .catch(({ error, status }) => res.status(status).json(error));
     },
 
     resetPassword(userIdObj) {

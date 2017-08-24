@@ -4,76 +4,55 @@ import shortid from 'shortid';
 export default function Authenticator({ generateJWT }, createUser, fetchUser, updateUser) {
   return {
     authenticate({ password, ...userIdObj }) {
-      return new Promise((resolve, reject) => {
-        fetchUser(userIdObj)
-          .then(user => {
-            comparePass(password, user)
-              .then(() => {
-                const userObject = { ...user }
-                // Delete user password before storing in JWT
-                delete userObject.password;
-
-                resolve(userObject);
-              })
-              .catch(error => {
-                reject(error || 'Password Incorrect');
-              });
-          })
-          .catch(error => {
-            reject(error);
-          })
-      })
+      return fetchUser(userIdObj)
+        .then(user => comparePass(password, user))
+        .then(user => {
+          const userObject = { ...user };
+          // Delete user password before storing in JWT
+          delete userObject.password;
+          return userObject;
+        })
+        .catch(error => {
+          throw { status: 401, error };
+        });
     },
 
     register(newUser) {
-      return new Promise((resolve, reject) => {
-        hashPass(newUser.password)
-          .then(hash => {
-            newUser.password = hash;
-            createUser(newUser)
-              .then(user => {
-                const userObject = { ...user }
-                delete userObject.password;
-                resolve(userObject);
-              })
-              .catch(error => {
-                reject(error);
-              });
-          })
-          .catch(error => {
-            reject(error);
-          });
-      })
+      return hashPass(newUser.password)
+        .then(hash => createUser({ ...newUser, password: hash }))
+        .then(newUser => {
+          const userObject = { ...newUser }
+          delete userObject.password;
+          return userObject;
+        })
+        .catch(error => {
+          throw { status: 500, error };
+        });
     },
 
     changePassword({ password, newPassword, ...userIdObj }) {
-      return new Promise((resolve, reject) => {
-        fetchUser(userIdObj)
-          .then(user => {
-            comparePass(password, user)
-              .then(() => {
-                // Hash new password
-                hashPass(newPassword)
-                  .then(hashedPass => {
-                    updateUser(userIdObj, { password: hashedPass })
-                      .then(user => {
-                        const result = { ...user };
-                        delete result.password;
-                        resolve(result);
-                      })
-                      .catch(error => reject(error));
-                  })
-                  .catch(error => reject(error));
-              })
-              .catch(error => reject(error || 'Password Incorrect'));
-          })
-          .catch(error => reject(error));
-      });
+      return fetchUser(userIdObj)
+        .then(user => (
+          comparePass(password, user)
+            .catch(() => {
+              throw new Error('Unauthorized')
+            })
+        ))
+        .then(() => hashPass(newPassword))
+        .then(hashedPass => updateUser(userIdObj, { password: hashedPass }))
+        .then(user => {
+          const userObject = { ...user };
+          delete userObject.password;
+          return userObject;
+        })
+        .catch(error => {
+          const status = error.message === 'Unauthorized' ? 401 : 500;
+          throw { status, error };
+        });
     },
 
     resetPassword(userIdObj) {
       const tempPassword = shortid.generate();
-
       return hashPass(tempPassword)
         .then(password => updateUser(userIdObj, { password }))
         .then(() => tempPassword);

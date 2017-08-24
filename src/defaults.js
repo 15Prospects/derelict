@@ -7,6 +7,6 @@ export default {
   longTokenExpiry,
   shortTokenExpiry,
   onAuthFail: (userData, next) => next(),
-  onRefreshFail: (token, userData, next) => next(),
-  validateRefresh: (token, userData, next) => next()
+  onRefreshFail: (token, next) => next(),
+  validateRefresh: (token, next) => next({}),
 };

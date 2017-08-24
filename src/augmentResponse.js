@@ -2,7 +2,7 @@ import http from 'http';
 import { generateXSRF } from './xsrfHelpers';
 
 
-export default function augmentResponse({ generateJWT }, accessTokenExpiry, refreshTokenExpiry, sslDomain) {
+export default function augmentResponse({ generateJWT }, accessTokenExpiry, sslDomain) {
   /**
    * Create JWT and XSRF tokens with data, attach as cookies to response object
    * @param {Object} data           Data to store in JWT
@@ -46,17 +46,10 @@ export default function augmentResponse({ generateJWT }, accessTokenExpiry, refr
 
   // Deprecated
   http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, type) {
-    const options = { dataName: 'user' };
-
-    if (type === 'refresh') {
-      options.name = 'REFRESH';
-      options.maxAge = refreshTokenExpiry;
-    }
-    
     const user = { ...userData };
     delete user.password;
 
-    return this.secureJWT(user, options); 
+    return this.secureJWT(user); 
   }
 
   http.OutgoingMessage.prototype.createSSRAuthToken = (userId) => {
