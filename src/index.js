@@ -16,7 +16,6 @@ const derelict = (function() {
   } = defaults;
   let accessTokenExpiry = longTokenExpiry;
   let refreshTokenExpiry = longTokenExpiry;
-  let domainString;
 
   return {
     setup({
@@ -27,10 +26,8 @@ const derelict = (function() {
       authRules,
       refresh,
       onFail,
-      sslDomain
+      sslDomain,
     }) {
-      domainString = sslDomain;
-
       if (refresh) {
         useRefresh = true;
         ({
@@ -82,18 +79,10 @@ const derelict = (function() {
     },
 
     logOut(req, res, next) {
-      const clearOpts = { path: '/' };
-
-      if (domainString) {
-        clearOpts.domain = domainString;
-      }
-
-      res.clearCookie('X-ACCESS-JWT', clearOpts);
-      res.clearCookie('X-ACCESS-XSRF', clearOpts);
+      res.clearSecureJWT();
 
       if (useRefresh) {
-        res.clearCookie('X-REFRESH-JWT', clearOpts);
-        res.clearCookie('X-REFRESH-XSRF', clearOpts);
+        res.clearSecureJWT('refresh');
       }
 
       res.status(200).json({ message: 'Success' });
