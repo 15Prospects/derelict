@@ -44,6 +44,19 @@ export default function augmentResponse({ generateJWT }, accessTokenExpiry, sslD
 
   http.OutgoingMessage.prototype.secureJWT = secureJWT;
 
+  function clearSecureJWT(name = 'ACCESS') {
+    const options = {
+      path: '/',
+      ...sslDomain && { domain: sslDomain },
+    };
+    const tokenName = name.toUpperCase();
+
+    this.clearCookie(`X-${tokenName}-JWT`, options);
+    this.clearCookie(`X-${tokenName}-XSRF`, options);
+  }
+
+  http.OutgoingMessage.prototype.clearSecureJWT = clearSecureJWT;
+
   // Deprecated
   http.OutgoingMessage.prototype.attachNewJWT = function attachNewJWT(userData, type) {
     const user = { ...userData };
