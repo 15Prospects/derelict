@@ -18,7 +18,7 @@ export function getXSRF(name = 'ACCESS') {
   var xsrf = getCookie(`X-${name.toUpperCase()}-XSRF`);
 
   if (xsrf) {
-    headers['x-access-xsrf'] = xsrf;
+    headers[`x-${name.toLowerCase()}-xsrf`] = xsrf;
   }
 
   return headers;
